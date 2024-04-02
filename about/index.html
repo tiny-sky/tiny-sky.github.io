@@ -1,0 +1,212 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>关于本站 | tiny-sky 的个人博客</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.ico"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=1.7.5"><!-- inject head--><link rel="stylesheet" href="https://cdn2.codesign.qq.com/icons/7pOrz0WXB5ZWJPX/latest/iconfont.css"><!-- aplayer--><!-- swiper--><!-- Open Graph--><meta name="description" content="关于本站"><!-- pwa--><script>(win => {
+        win.saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay,
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        }
+
+        const DarkModeStatus = localStorage.getItem('theme')
+        if (DarkModeStatus !== null) {
+            if (DarkModeStatus === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark')
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light')
+            }
+        }
+
+        const asideStatus = saveToLocal.get('aside-status')
+        if (asideStatus !== undefined) {
+            if (asideStatus === 'hide') {
+                document.documentElement.classList.add('hide-aside')
+            } else {
+                document.documentElement.classList.remove('hide-aside')
+            }
+        }
+
+        win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+            const link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = url
+            if (id) link.id = id
+            link.onerror = reject
+            link.onload = link.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+            }
+            document.head.appendChild(link)
+        })
+
+        win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+            const script = document.createElement('script')
+            script.src = url
+            script.async = true
+            script.onerror = reject
+            script.onload = script.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+            }
+
+            Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+            })
+
+            document.head.appendChild(script)
+        })
+    }
+)(window)
+
+console.log(
+    "%c Program: Hexo %c Theme: Solitude %c Version: v1.7.5",
+    "border-radius:5px 0 0 5px;padding: 5px 10px;color:white;background:#ff3842;",
+    "padding: 5px 10px;color:white;background:#3e9f50;",
+    "border-radius:0 5px 5px 0;padding: 5px 10px;background:#0084ff;color:white;"
+);</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2024-03-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.png'
+    },
+    copyright: false,
+    highlight: {
+        enable: true,
+        limit: 200,
+        expand: true,
+        copy: true,
+        syntax: 'highlight.js'
+    },
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"f12":"开发者模式已打开，请遵循GPL协议。"},
+    aside: {
+        sayhello: {
+            morning: '一日之计在于晨',
+            noon: '吃饱了才有力气干活',
+            afternoon: '集中精力，攻克难关',
+            night: '不要太劳累了，早睡更健康',
+            goodnight: '睡个好觉，保证精力充沛',
+        },
+        sayhello2: ["🤖️ 数码科技爱好者","🔍 分享与热心帮助","🔨 设计开发一条龙","🏃 脚踏实地行动派","🧱 团队小组发动机"],
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    post_ai: false
+};</script><meta name="generator" content="Hexo 7.1.1"></head><body id="body" data-type="about"><!-- universe--><canvas id="universe"></canvas><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude st-close-fill"></i></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude st-moon-clear-fill"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude st-side-bar-fill"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude st-moon-clear-fill"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/c/">c++<sup>4</sup></a></div></div></div></div><!-- keyboard--><div class="page" id="body-wrap"><header class="not-top-img" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude st-more-fill"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">关于本站</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude st-arrow-up-line"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude st-menu-line"></i></a></div></div></div></nav></header><main class="layout hide-aside" id="content-inner"><div id="page"><div id="about-page"><div class="author-info"><div class="author-tag-left"><span class="author-tag">🤖️ IT科技爱好者</span><span class="author-tag">🔍 分享与热心帮助</span><span class="author-tag">🏠 智能家居小能手</span></div><div class="author-img"><img src="/img/tiny-sky.png"></div><div class="author-tag-right"><span class="author-tag">脚踏实地行动派 🏃</span><span class="author-tag">团队小组发动机 🧱</span><span class="author-tag">壮汉人狠话不多 💢</span></div></div><div class="author-title">关于本站</div><div class="author-content"><div class="author-content-item myInfoAndSayHello"><div class="title1">你好，很高兴认识你👋</div><div class="title2"><span class="inline-word">我是 tiny-sky</span></div><div class="title1">是一名学生、软件工程师、独立开发者</div></div><div class="aboutsiteTips author-content-item"><div class="author-content-item-tips">追求</div><h2><span class="inline-word">源于<br>热爱而去创造</span><div class="mask"><span class="first-tips" data-show="">优秀的产品</span><span>出色的设计</span><span>高效的编程</span><span data-up="">人性化的用户体验</span></div></h2></div></div><script>var pursuitInterval = null;
+pursuitInterval = setInterval(function () {
+    const show = document.querySelector('span[data-show]')
+    const next = show.nextElementSibling || document.querySelector('.first-tips')
+    const up = document.querySelector('span[data-up]')
+    if (up) {
+        up.removeAttribute('data-up')
+    }
+    show.removeAttribute('data-show')
+    show.setAttribute('data-up', '')
+    next.setAttribute('data-show', '')
+}, 2000)
+
+document.addEventListener('pjax:send', function () {
+    clearInterval(pursuitInterval);
+});</script><div class="author-content"><div class="author-content-item skills"><div class="card-content"><div class="author-content-item-tips">技能</div><span class="author-content-item-title">开启创造力</span><div class="skills-style-group"><div class="tags-group-all"><div class="tags-group-wrapper"><div class="tags-group-icon-pair"><div class="tags-group-icon" style="background:#e9572b"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/HTML.png" title="HTML"></div><div class="tags-group-icon" style="background:#f7cb4f"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/JS.png" title="Javascript"></div></div><div class="tags-group-icon-pair"><div class="tags-group-icon" style="background:#ffffff"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/kotlin-logo.svg" title="Kotlin"></div><div class="tags-group-icon" style="background:#2e3a41"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/webpack.png" title="WebPack"></div></div><div class="tags-group-icon-pair"><div class="tags-group-icon" style="background:#df5b40"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/git.png" title="Git"></div><div class="tags-group-icon" style="background:#57b6e6"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/webpack.png" title="Docker"></div></div><div class="tags-group-icon-pair"><div class="tags-group-icon" style="background:#ffffff"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/vs-logo.svg" title="Visual Studio"></div></div><div class="tags-group-icon-pair"><div class="tags-group-icon" style="background:#e9572b"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/HTML.png" title="HTML"></div><div class="tags-group-icon" style="background:#f7cb4f"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/JS.png" title="Javascript"></div></div><div class="tags-group-icon-pair"><div class="tags-group-icon" style="background:#ffffff"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/kotlin-logo.svg" title="Kotlin"></div><div class="tags-group-icon" style="background:#2e3a41"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/webpack.png" title="WebPack"></div></div><div class="tags-group-icon-pair"><div class="tags-group-icon" style="background:#df5b40"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/git.png" title="Git"></div><div class="tags-group-icon" style="background:#57b6e6"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/webpack.png" title="Docker"></div></div><div class="tags-group-icon-pair"><div class="tags-group-icon" style="background:#ffffff"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/vs-logo.svg" title="Visual Studio"></div></div></div></div><div class="skills-list"><div class="skill-info"><div class="skill-icon" style="background:#e9572b"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/HTML.png" title="HTML"></div><div class="skill-name"><span>HTML</span></div></div><div class="skill-info"><div class="skill-icon" style="background:#f7cb4f"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/JS.png" title="Javascript"></div><div class="skill-name"><span>Javascript</span></div></div><div class="skill-info"><div class="skill-icon" style="background:#ffffff"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/kotlin-logo.svg" title="Kotlin"></div><div class="skill-name"><span>Kotlin</span></div></div><div class="skill-info"><div class="skill-icon" style="background:#2e3a41"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/webpack.png" title="WebPack"></div><div class="skill-name"><span>WebPack</span></div></div><div class="skill-info"><div class="skill-icon" style="background:#df5b40"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/git.png" title="Git"></div><div class="skill-name"><span>Git</span></div></div><div class="skill-info"><div class="skill-icon" style="background:#57b6e6"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/webpack.png" title="Docker"></div><div class="skill-name"><span>Docker</span></div></div><div class="skill-info"><div class="skill-icon" style="background:#ffffff"><img src="https://npm.elemecdn.com/wleelw-blog-abs@1.0.0/img/icon/vs-logo.svg" title="Visual Studio"></div><div class="skill-name"><span>Visual Studio</span></div></div><div class="etc">...</div></div></div></div></div><div class="author-content-item careers"><div class="card-content"><div class="author-content-item-tips">生涯</div><span class="author-content-item-title">无限进步</span><div class="careers-group"><div class="careers-item"><div class="circle" style="background:#357ef5"></div><div class="name">软件工程, 学习</div></div></div><img class="author-content-img" src="https://7.isyangs.cn/1/65eb2d10ba24d-1.png" alt="生涯"></div></div></div><div class="author-content"><div class="author-content-item maxim"><div class="author-content-item-tips">座右铭</div><span class="maxim-title"><span>人生苦短，</span><span>及时行乐。</span></span></div><div class="author-content-item buff"><div class="card-content"><div class="author-content-item-tips">特长</div><span class="buff-title"><span>C++、数据库、操作系统<span class="inline-word"></span></span><span>学习能力<span class="inline-word">MAX</span></span></span></div></div></div><div class="author-content"><div class="author-content-item like-technology" style="background: url(https://7.isyangs.cn/1/65eb2e3d6616b-1.png) no-repeat center;"><div class="card-content"><div class="author-content-item-tips">关注偏好</div><span class="author-content-item-title">计算机</span><div class="content-bottom"><div class="tips"></div></div></div></div><div class="author-content-item like-music" style="background: url(https://7.isyangs.cn/1/65eb2e5f85132-1.png) no-repeat center;"><div class="card-content"><div class="author-content-item-tips">音乐偏好</div><span class="author-content-item-title">民谣、古典、轻音乐</span><div class="content-bottom"><div class="tips">跟 我 一起欣赏更多音乐</div><div class="banner-button-group"><a class="banner-button" href="/music/"><i class="solitude st-right-btn-fill"></i><span class="banner-button-text">更多推荐</span></a></div></div></div></div></div><div class="author-content"><div class="about-statistic author-content-item" style="background: url(https://7.isyangs.cn/1/65eb2e9109826-1.png);"><div class="card-content"><div class="author-content-item-tips">数据</div><span class="author-content-item-title">访问统计</span><div id="statistic"></div><div class="post-tips">统计信息来自<a target="_blank" rel="noopener" href="https://v6.51.la/">51la网站统计</a></div></div><script>fetch("https://v6-widget.51.la/v6/3F15j2vtdTo7PPcN/quote.js")
+    .then(res => res.text())
+    .then(data => {
+        const title = ["最近活跃", "今日人数", "今日访问", "昨日人数", "昨日访问", "本月访问", "总访问量"];
+        let num = data.match(/(<\/span><span>).*?(\/span><\/p>)/g);
+        num = num.map(el => {
+            let val = el.replace(/(<\/span><span>)/g, "");
+            return val.replace(/(<\/span><\/p>)/g, "");
+        });
+        const s = document.getElementById("statistic");
+        let html = '';
+        for (let i = 0; i < num.length; i++) {
+            if (i === 0 || i === num.length - 1) continue;
+            html += `<div><span>${title[i]}</span><span id="${title[i]}">${num[i]}</span></div>`;
+        }
+        s.innerHTML = html;
+    });
+
+</script></div></div><div class="author-content"><div class="create-site-post author-content-item single"><div class="author-content-item-tips">心路历程</div><span class="author-content-item-title">为什么建站？</span><br>创建这个站的时候，想要就是能够有一个自己能够<b>积累知识、积累兴趣</b>的地方。和他人分享，会让这些成为积累和沉淀。如果能够帮助到更多的人，帮助更多人解决问题，那一定是非常棒的事情。 <br> 与大多数垂直类的技术博客不同，这里的种类会非常的繁杂，有<b>技能的教程干货</b>、有<b>生活上的吐槽和妙招</b>、有<b>话题上的思考和想法</b>。一般我研究什么、发现了什么都会分享在这里。 <br> 这些就是创造这个小站的本意，<b>也是我分享生活的方式</b>。有幸能和你相遇在这里，相信我们能共同留下一段美好记忆。 <br></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span class="solitude">Solitude</span></div><div class="footer-bar-description">来自tiny-sky 的个人博客 - 人生苦短，及时行乐的文章</div><a class="footer-bar-link" href="/">了解更多</a></div><div id="footer_deal"><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/img/pwa/favicon.ico" alt="返回顶部"></div></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="归档">归档</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2024 By&nbsp;<a class="footer-bar-link" href="/">tiny-sky</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="主题">主题</a><a class="footer-bar-link cc" href="/null" aria-label="copyright"><i class="solitude st-copyright-line"></i><i class="solitude st-creative-commons-by-line"></i><i class="solitude st-creative-commons-nc-line"></i><i class="solitude st-creative-commons-nd-line"></i></a></div></div></div></footer></div><!-- inject body--><div><script src="/js/main.js?v=1.7.5"></script><script src="/js/utils.js?v=1.7.5"></script><script src="/js/third_party/universe.min.js?v=1.7.5"></script><script>dark()
+</script><script src="https://cdn.staticfile.net/pjax/0.2.8/pjax.min.js"></script><script src="https://cdn.staticfile.net/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdn.staticfile.net/pace/1.2.4/pace.min.js"></script></div><div id="js-pjax"><script id="config-diff">var PAGE_CONFIG = {
+    is_post: false,
+    is_page: true,
+    is_home: false,
+    page: 'about',
+    toc: false,
+    comment: false,
+}
+</script></div><!-- newest comment--><!-- pjax--><script>let pjaxSelectors = [
+    'title',
+    '#body-wrap',
+    '#site-config',
+    'meta[name="description"]',
+    '#js-pjax',
+    'meta[property^="og:"]',
+]
+
+const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+}
+initTheme()</script><!-- google adsense--><!-- search--><!-- music--></body></html><script>const posts=["2024/04/02/直接初始化与复制初始化/","2024/04/02/智能指针/","2024/04/02/左右值与move/","2024/04/02/tuple/"];function toRandomPost(){ pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]); }</script>
