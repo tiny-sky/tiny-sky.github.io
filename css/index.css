@@ -4674,6 +4674,11 @@ span.tags-punctuation::before {
     left: 0;
   }
 }
+@media screen and (max-width: 768px) {
+  #nav-console {
+    display: none;
+  }
+}
 span.tags-punctuation {
   margin-right: 2px;
   font-size: 0.7rem;
@@ -5275,7 +5280,7 @@ span.tags-punctuation {
     height: 100%;
     top: 0;
     left: 0;
-    box-shadow: 0 -109px 133px -9px #f00 inset;
+    box-shadow: 0 -109px 133px -9px #0060ff inset;
   }
   .topGroup .todayCard.hide {
     opacity: 0;
