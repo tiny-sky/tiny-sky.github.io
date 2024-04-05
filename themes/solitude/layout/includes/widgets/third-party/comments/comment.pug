@@ -1,0 +1,15 @@
+#post-comment
+    .comment-head
+        .comment-headline
+            i.solitude.st-chat-fill
+            span=_p('comment.title')
+            span
+    .comment-wrap
+        #comment
+        case theme.comment.type
+            when 'twikoo'
+                !=partial('includes/widgets/third-party/comments/twikoo',{}, {cache: true})
+            when 'waline'
+                !=partial('includes/widgets/third-party/comments/waline',{}, {cache: true})
+            when 'valine'
+                !=partial('includes/widgets/third-party/comments/valine',{}, {cache: true})

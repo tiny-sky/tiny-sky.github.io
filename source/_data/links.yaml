@@ -1,0 +1,38 @@
+banner_suffix: 
+links:
+  - class_name: 朋友 # 分类名称
+    descr:  莫逆于心，遂相与友 # 分类简介
+    type: card  # 显示方式，有两种 card / item
+    suffix: 
+    link_list:
+      - name: 元芳 # 友链名称
+        link: https://yuanfang.thisis.host//   # 友链地址
+        avatar: /img/links/yuanfang.gif  # 显示头像
+        descr: 琼楼挂月钓流云，梦里瑶台暂借春   # 友链简介
+        topimg: /img/links/yuanfang.gif  # 如果是card模式下，将显示
+        tag: 友
+        color: vip
+      - name: 纸鹿 # 友链名称
+        link: https://blog.zhilu.cyou/   # 友链地址
+        avatar: /img/links/zhilu.png  # 显示头像
+        descr: 纸鹿至麓不知路，支炉制露不止漉   # 友链简介
+        topimg: /img/links/zhilu.png  # 如果是card模式下，将显示
+        tag: 友
+        color: vip
+      - name: future # 友链名称
+        link: https://future.thisis.host/   # 友链地址
+        avatar: /img/links/future.png  # 显示头像
+        descr: Hang on to your dreams !   # 友链简介
+        topimg: /img/links/future.png  # 如果是card模式下，将显示
+        tag: 友
+        color: vip
+  
+  #- class_name: 技术
+  #  descr: 技术知识为主的博客
+  #  type: item
+  #  suffix: 
+  #  link_list:
+  #    - name: isYangs   # 友链名称
+  #      link: https://isyangs.cn    # 友链地址
+  #      avatar: https://7.isyangs.cn/8/655c9835780a0-8.jpg  # 显示头像
+  #      descr: 一个前端Bug构造师的博客    # 友链简介
