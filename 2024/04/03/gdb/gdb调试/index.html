@@ -1,0 +1,266 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>gdb调试CMU15445-P3 | tiny-sky 的个人博客</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.ico"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=1.7.5"><!-- inject head--><link rel="stylesheet" href="https://cdn2.codesign.qq.com/icons/7pOrz0WXB5ZWJPX/latest/iconfont.css"><!-- aplayer--><!-- swiper--><!-- Open Graph--><meta name="description" content="gdb调试CMU15445-P3简介在小型的项目中，代码流程都很清楚，并没有涉及到复杂的函数调用与层层封装，然而在一个比较完整的项目中，层与层之间的高度封装，函数流的调用，让我们想理解某一块的代码实现增加了许多困难。 为此，使用 gdb 调试代码可以很好的显示中间过程以及调用流，以方便我们更好的理解"><!-- pwa--><script>(win => {
+        win.saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay,
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        }
+
+        const DarkModeStatus = localStorage.getItem('theme')
+        if (DarkModeStatus !== null) {
+            if (DarkModeStatus === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark')
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light')
+            }
+        }
+
+        const asideStatus = saveToLocal.get('aside-status')
+        if (asideStatus !== undefined) {
+            if (asideStatus === 'hide') {
+                document.documentElement.classList.add('hide-aside')
+            } else {
+                document.documentElement.classList.remove('hide-aside')
+            }
+        }
+
+        win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+            const link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = url
+            if (id) link.id = id
+            link.onerror = reject
+            link.onload = link.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+            }
+            document.head.appendChild(link)
+        })
+
+        win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+            const script = document.createElement('script')
+            script.src = url
+            script.async = true
+            script.onerror = reject
+            script.onload = script.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+            }
+
+            Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+            })
+
+            document.head.appendChild(script)
+        })
+    }
+)(window)
+
+console.log(
+    "%c Program: Hexo %c Theme: Solitude %c Version: v1.7.5",
+    "border-radius:5px 0 0 5px;padding: 5px 10px;color:white;background:#ff3842;",
+    "padding: 5px 10px;color:white;background:#3e9f50;",
+    "border-radius:0 5px 5px 0;padding: 5px 10px;background:#0084ff;color:white;"
+);</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2024-03-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.png'
+    },
+    copyright: false,
+    highlight: {
+        enable: true,
+        limit: 200,
+        expand: true,
+        copy: true,
+        syntax: 'highlight.js'
+    },
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"f12":"开发者模式已打开，请遵循GPL协议。"},
+    aside: {
+        sayhello: {
+            morning: '一日之计在于晨',
+            noon: '吃饱了才有力气干活',
+            afternoon: '集中精力，攻克难关',
+            night: '不要太劳累了，早睡更健康',
+            goodnight: '睡个好觉，保证精力充沛',
+        },
+        sayhello2: ["🤖️ 数码科技爱好者","🔍 分享与热心帮助","🔨 设计开发一条龙","🏃 脚踏实地行动派","🧱 团队小组发动机"],
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    post_ai: false
+};</script><meta name="generator" content="Hexo 7.1.1"></head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude st-close-fill"></i></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude st-moon-clear-fill"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude st-side-bar-fill"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude st-moon-clear-fill"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/c/">c++<sup>4</sup></a><a href="/tags/gdb/">gdb<sup>1</sup></a><a href="/tags/CMU-15445/">CMU-15445<sup>1</sup></a></div></div></div></div><!-- keyboard--><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude st-more-fill"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">gdb调试CMU15445-P3</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);"><i class="solitude st-dashboard-fill"></i></a></div><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude st-arrow-up-line"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude st-menu-line"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/img/blog/blog4.jpg" alt="gdb调试CMU15445-P3"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/gdb/"><span class="tags-name tags-punctuation">gdb</span></a><a class="post-meta__tags" href="/tags/CMU-15445/"><span class="tags-name tags-punctuation">CMU-15445</span></a></div></div></div></div><h1 class="post-title">gdb调试CMU15445-P3</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2024-04-03 17:31:04"><i class="post-meta-icon solitude st-calendar-todo-fill"></i><time datetime="2024-04-03T09:31:04.074Z">2024-04-03T09:31:04.074Z</time></span><span class="post-meta-date" title="最后更新于 2024-04-05 18:19:13"><i class="post-meta-icon solitude st-refresh-line"></i><time datetime="2024-04-05T10:19:13.970Z">2024-04-05T10:19:13.970Z</time></span><a class="post-meta-pv" href="/2024/04/03/gdb/gdb%E8%B0%83%E8%AF%95/" title="文章热度"><i class="post-meta-icon solitude st-fire-fill"></i></a></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="gdb调试CMU15445-P3"><a href="#gdb调试CMU15445-P3" class="headerlink" title="gdb调试CMU15445-P3"></a>gdb调试CMU15445-P3</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在小型的项目中，代码流程都很清楚，并没有涉及到复杂的函数调用与层层封装，然而在一个比较完整的项目中，层与层之间的高度封装，函数流的调用，让我们想理解某一块的代码实现增加了许多困难。</p>
+<p>为此，使用 gdb 调试代码可以很好的显示中间过程以及调用流，以方便我们更好的理解某一块代码的实现。</p>
+<span id="more"></span>
+
+<p>本文并不涉及到 gdb 相关的基础语法</p>
+<p>基础语法可以参考 <a target="_blank" rel="noopener" href="https://subingwen.cn/linux/gdb/index.html">GDB调试</a></p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>由于在 CMU15445 的 P3 中需要实现几个执行器与优化算子，所以必须要理解此处的代码流程是什么。</p>
+<p><img src="/../../img/blogs/db0/p3.png" alt="0"></p>
+<p>当我们运行它所要求的 SQL 语句之后</p>
+<p><img src="/../../img/blogs/db0/1.png" alt="1"></p>
+<p>报错是由于 SeqScanExecutor 没有实现</p>
+<p>所以现在应该找到该类所对应的文件</p>
+<p><img src="/../../img/blogs/db0/2.png" alt="2"></p>
+<p>那么该项目是如何执行到这个位置呢？传入参数的含义分别是什么呢？</p>
+<p>此时我们就可以通过 gdb 来定位执行流程</p>
+<p><img src="/../../img/blogs/db0/3.png" alt="3"></p>
+<p>如上图， 在使用 gdb 启动项目之后，我们在需要定位的地方打上断点，之后就可以开始调试。</p>
+<h2 id="定位流程"><a href="#定位流程" class="headerlink" title="定位流程"></a>定位流程</h2><p>输入对应的语句</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> t1(v1 <span class="type">INT</span>, v2 <span class="type">VARCHAR</span>(<span class="number">100</span>));</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t1;</span><br></pre></td></tr></table></figure>
+
+<p>我们发现程序停在了我们打断点的地方</p>
+<p><img src="/../../img/blogs/db0/4.png" alt="4"></p>
+<p>此时我们可以显示一下当前的堆栈信息</p>
+<p><img src="/../../img/blogs/db0/5.png" alt="5"></p>
+<p>使用 bt 可以显示当前的调用流程，顺序是从下往上：</p>
+<ol>
+<li>main 函数应该是主函数，最先被执行。(位于shell.cpp:99)</li>
+<li>bustub::BustubInstance::ExecuteSql 函数，是位于 bustub 命名空间中的 BustubInstance 类中的方法，被 main 函数调用。(位于bustub_instance.cpp:196)</li>
+<li>同理，ExecuteSqlTxn 也是上面类中的方法，被 ExecuteSql 调用，之后去调用 Execute 函数</li>
+<li>Execute 函数是 ExecutionEngine 中的方法，该函数最后调用 SeqScanExecutor::Init 函数。</li>
+<li>SeqScanExecutor::Init 是需要我们完成的代码，执行初始化逻辑。</li>
+</ol>
+<p>同时，你也可以看出部分的传入参数，例如 : sql&#x3D;”SELECT * FROM t1;” ,这里应该是将我们输入的数据当作参数来传递。</p>
+<p>更具体的来分析，你可以使用 frame 命令来显示每一个栈帧。</p>
+<p>这里使用 #4 栈帧来举例<br><img src="/../../img/blogs/db0/6.png" alt="6"></p>
+<p>可以通过其他命令来进一步输出信息：</p>
+<ol>
+<li>你可以使用 list(l) 来输出当前的函数的位置</li>
+<li>你也可以输出更详细的变量信息：</li>
+</ol>
+<ul>
+<li>info args : 显示当前函数的传入参数</li>
+<li>info locals : 显示当前函数的变量信息</li>
+<li>p xxx ：指定显示 xxx 变量。</li>
+</ul>
+<p>加上下面的命令使结构体输出更美观：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set print pretty on</span><br></pre></td></tr></table></figure>
+
+<p>重复上面的步骤，结合源代码，重点关注所涉及的类：如何构造? 功能是什么？如何使用？</p>
+<p>一般来说一个项目都会有相似的功能流程，可以使用上面的方法看懂已经实现好的流程代码，再去看看需要我们完成的部分。</p>
+<h2 id="分析流程"><a href="#分析流程" class="headerlink" title="分析流程"></a>分析流程</h2><p>该过程需要对流程中涉及到的类与方法有一定的了解</p>
+<h3 id="对-shell-cpp-分析"><a href="#对-shell-cpp-分析" class="headerlink" title="对 shell.cpp 分析"></a>对 shell.cpp 分析</h3><p>我们发现：shell.cpp 前部分的代码主要是一些字符处理与预备工作，所以我们将我们的视野定位到下面的 try-catch 块中。</p>
+<p><img src="/../../img/blogs/db0/7.png" alt="7"></p>
+<p>调试之后发现，这一块的代码逻辑是：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> writer = bustub::<span class="built_in">FortTableWriter</span>(); <span class="comment">// 格式化输出方式，因为该数据库是以表的形式输出</span></span><br><span class="line">bustub-&gt;<span class="built_in">ExecuteSql</span>(query, writer); <span class="comment">// 具体的执行逻辑，将返回的结果集放在writer中</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">const</span> <span class="keyword">auto</span> &amp;table : writer.tables_) &#123;</span><br><span class="line">   std::cout &lt;&lt; table; <span class="comment">// 将结果集输出</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="对-ExecuteSql-分析"><a href="#对-ExecuteSql-分析" class="headerlink" title="对 ExecuteSql 分析"></a>对 ExecuteSql 分析</h3><p>该函数开启了事务，(事务在后续的任务中会涉及到，此处可以不用深入了解)</p>
+<p>核心的代码就是下面的 ExecuteSqlTxn 函数。<br><img src="/../../img/blogs/db0/8.png" alt="8"></p>
+<h3 id="对-ExecuteSqlTxn-分析"><a href="#对-ExecuteSqlTxn-分析" class="headerlink" title="对 ExecuteSqlTxn 分析"></a>对 ExecuteSqlTxn 分析</h3><p>该代码可以算是执行中的核心代码</p>
+<ol>
+<li>我们来慢慢分析：</li>
+</ol>
+<p><img src="/../../img/blogs/db0/9.png" alt="9"></p>
+<p>原来 bustub-shell 中的 <code>\dt</code>, <code>\di</code> 命令，并没有执行完整的调用逻辑，而是执行了对应的处理函数。</p>
+<p><img src="/../../img/blogs/db0/10.png" alt="10"></p>
+<ol start="2">
+<li>首先是 Binder类，该类的具体实现大家可以之后深入分析</li>
+</ol>
+<p>在这里的作用是 使用 Catalog 类来初始化，之后解析我们输入的字符串，生成表示查询的抽象语法树(AST)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Catalong 不知道？ 还记得我上面所说：该过程需要对流程中涉及到的类与方法有一定的了解！</span><br><span class="line">sql 变量是不是感到似曾相识，没错，在上面gdb调试中的bt命令中出现过</span><br></pre></td></tr></table></figure>
+<p>随后就是根据不同的表达式类型去执行对应的逻辑。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> t1(v1 <span class="type">INT</span>, v2 <span class="type">VARCHAR</span>(<span class="number">100</span>));</span><br></pre></td></tr></table></figure>
+<p>所以在 bustub-shell 中，上面的语句可以直接执行，原因是判断到此处要求是创建一个表，直接就执行对应的函数了。</p>
+<ol start="3">
+<li>这是核心的处理逻辑</li>
+</ol>
+<p>大致可以分为以下几个模块：</p>
+<p><img src="/../../img/blogs/db0/11.png" alt="11"></p>
+<p>分别是: 查询计划，优化器，执行计划，结果格式化。</p>
+<p>这里前三个模块都是重点，特别是优化器，这里的代码需要大家去认真理解。<br>具体的分析之后可以再详细说说。</p>
+<p>对于p3，目前我们优先关注 Execute 执行函数。</p>
+<h3 id="对-Execute-分析"><a href="#对-Execute-分析" class="headerlink" title="对 Execute 分析"></a>对 Execute 分析</h3><p><img src="/../../img/blogs/db0/12.png" alt="12"></p>
+<p>这里的调用流程主要也是创建一个执行器，然后在 try-catch 块中进行对应执行器的初始化与执行</p>
+<p><img src="/../../img/blogs/db0/13.png" alt="13"></p>
+<p>基于火山模型，在 PollExecutor 中循环调用具体的 next 方法获取 tuple ，之后将 tuple 放在结果集 result_set 中。</p>
+<p>分析了这么多，终于明确了执行器 init 与 next 的调用流程，同时把 bustub-shell 的核心流程梳理了一遍。</p>
+<h2 id="后续调试"><a href="#后续调试" class="headerlink" title="后续调试"></a>后续调试</h2><p>接下来就是，通过在需要关注的地方打断点，进行单步调试。</p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><a class="post-copyright__author_img" href="/about/"><img class="post-copyright__author_img_front" src="/img/pwa/favicon.ico"></a><div class="post-copyright__author_name">tiny-sky 的个人博客</div><div class="post-copyright__author_desc">人生苦短，及时行乐</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">tiny-sky 的个人博客</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/gdb/"><span class="tags-punctuation"></span>gdb<span class="tagsPageCount">1</span></a><a class="post-meta__tags" href="/tags/CMU-15445/"><span class="tags-punctuation"></span>CMU-15445<span class="tagsPageCount">1</span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/04/02/%E7%9B%B4%E6%8E%A5%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E5%A4%8D%E5%88%B6%E5%88%9D%E5%A7%8B%E5%8C%96/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">直接初始化与复制初始化</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="author-info__top-group"><div class="author-info__sayhi" id="author-info__sayhi" onclick="sco.changeSayHelloText()">sayhello.morning</div></div></div><div class="avatar-img-group"><img class="avatar-img" alt="头像" src="/img/tiny-sky.png"><div class="avatar-sticker"><img class="avatar-sticker-img" src="https://7.isyangs.cn/34/65f2e4e0423cc-34.png" alt="心情贴纸"></div></div><div class="author-info__description_group"><div class="author-info__description">分享自己对编程的<b>热爱</b>，对美好生活的<b>向往</b>。</div><div class="author-info__description2">相信你可以在这里找到对你有用的知识和教程。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/about/"><div class="author-info__name">tiny-sky</div><div class="author-info__desc">人生苦短，及时行乐</div></a><div class="card-info-social-icons is-center"><a class="social-icon" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><a class="social-icon" href="tiny-sky:goto.age@gmail.com" title="Mail"><i class="solitude  st-mail-line"></i></a></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude st-menu-line"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#gdb%E8%B0%83%E8%AF%95CMU15445-P3"><span class="toc-text">gdb调试CMU15445-P3</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="toc-text">准备工作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E6%B5%81%E7%A8%8B"><span class="toc-text">定位流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%9E%90%E6%B5%81%E7%A8%8B"><span class="toc-text">分析流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9-shell-cpp-%E5%88%86%E6%9E%90"><span class="toc-text">对 shell.cpp 分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9-ExecuteSql-%E5%88%86%E6%9E%90"><span class="toc-text">对 ExecuteSql 分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9-ExecuteSqlTxn-%E5%88%86%E6%9E%90"><span class="toc-text">对 ExecuteSqlTxn 分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9-Execute-%E5%88%86%E6%9E%90"><span class="toc-text">对 Execute 分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E7%BB%AD%E8%B0%83%E8%AF%95"><span class="toc-text">后续调试</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude st-map-line"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/04/03/gdb/gdb%E8%B0%83%E8%AF%95/" title="gdb调试CMU15445-P3"><img alt="gdb调试CMU15445-P3" src="/img/blog/blog4.jpg"></a><div class="content"><a class="title" href="/2024/04/03/gdb/gdb%E8%B0%83%E8%AF%95/" title="gdb调试CMU15445-P3">gdb调试CMU15445-P3</a><a class="article-recent_post_categories" href="/2024/04/03/gdb/gdb%E8%B0%83%E8%AF%95/">数据库</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/02/%E7%9B%B4%E6%8E%A5%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E5%A4%8D%E5%88%B6%E5%88%9D%E5%A7%8B%E5%8C%96/" title="直接初始化与复制初始化"><img alt="直接初始化与复制初始化" src="/img/blog/blog3.jpg"></a><div class="content"><a class="title" href="/2024/04/02/%E7%9B%B4%E6%8E%A5%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E5%A4%8D%E5%88%B6%E5%88%9D%E5%A7%8B%E5%8C%96/" title="直接初始化与复制初始化">直接初始化与复制初始化</a><a class="article-recent_post_categories" href="/2024/04/02/%E7%9B%B4%E6%8E%A5%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E5%A4%8D%E5%88%B6%E5%88%9D%E5%A7%8B%E5%8C%96/">c++</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/02/%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88/" title="c++ 智能指针 解析"><img alt="c++ 智能指针 解析" src="/img/blog/blog2.jpg"></a><div class="content"><a class="title" href="/2024/04/02/%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88/" title="c++ 智能指针 解析">c++ 智能指针 解析</a><a class="article-recent_post_categories" href="/2024/04/02/%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88/">c++</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/02/%E5%B7%A6%E5%8F%B3%E5%80%BC%E4%B8%8Emove/" title="c++ 中左右值与 std::move 的解析"><img alt="c++ 中左右值与 std::move 的解析" src="/img/blog/blog1.jpg"></a><div class="content"><a class="title" href="/2024/04/02/%E5%B7%A6%E5%8F%B3%E5%80%BC%E4%B8%8Emove/" title="c++ 中左右值与 std::move 的解析">c++ 中左右值与 std::move 的解析</a><a class="article-recent_post_categories" href="/2024/04/02/%E5%B7%A6%E5%8F%B3%E5%80%BC%E4%B8%8Emove/">c++</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/02/tuple/" title="std::tuple 解析"><img alt="std::tuple 解析" src="/img/blog/blog0.jpg"></a><div class="content"><a class="title" href="/2024/04/02/tuple/" title="std::tuple 解析">std::tuple 解析</a><a class="article-recent_post_categories" href="/2024/04/02/tuple/">c++</a></div></div></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span class="solitude">Solitude</span></div><div class="footer-bar-description">来自tiny-sky 的个人博客 - 人生苦短，及时行乐的文章</div><a class="footer-bar-link" href="/">了解更多</a></div><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/img/pwa/favicon.ico" alt="返回顶部"></div><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/xiyou-linuxer" title="GithubGroup"><i class="solitude  st-github-line"></i></a></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="归档">归档</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div><div class="footer-group"><h3 class="footer-title">服务</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://aliyun.com/" title="阿里云">阿里云</a><a class="footer-item" target="_blank" rel="noopener" href="https://summer-ospp.ac.cn/" title="OSPP">OSPP</a><a class="footer-item" target="_blank" rel="noopener" href="https://summerofcode.withgoogle.com/" title="GSOC">GSOC</a></div></div><div class="footer-group"><h3 class="footer-title">收藏</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://csdiy.wiki/" title="CSDIY">CSDIY</a><a class="footer-item" target="_blank" rel="noopener" href="https://xiaolincoding.com/" title="小林Coding">小林Coding</a><a class="footer-item" target="_blank" rel="noopener" href="https://subingwen.cn/" title="爱编程的大丙">爱编程的大丙</a></div></div><div class="footer-group"><h3 class="footer-title">网站</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://leetcode.cn/" title="LeetCode">LeetCode</a><a class="footer-item" target="_blank" rel="noopener" href="https://chat.openai.com/" title="ChatGPT">ChatGPT</a></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2024 By&nbsp;<a class="footer-bar-link" href="/">tiny-sky</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="主题">主题</a><a class="footer-bar-link cc" href="/null" aria-label="copyright"><i class="solitude st-copyright-line"></i><i class="solitude st-creative-commons-by-line"></i><i class="solitude st-creative-commons-nc-line"></i><i class="solitude st-creative-commons-nd-line"></i></a></div></div></div></footer></div><!-- inject body--><div><script src="/js/main.js?v=1.7.5"></script><script src="/js/utils.js?v=1.7.5"></script><script src="/js/third_party/universe.min.js?v=1.7.5"></script><script>dark()
+</script><script src="https://cdn.staticfile.net/pjax/0.2.8/pjax.min.js"></script><script src="https://cdn.staticfile.net/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdn.staticfile.net/pace/1.2.4/pace.min.js"></script></div><div id="js-pjax"><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: 'post',
+    toc: true,
+    comment: false,
+}
+</script></div><!-- newest comment--><!-- pjax--><script>let pjaxSelectors = [
+    'title',
+    '#body-wrap',
+    '#site-config',
+    'meta[name="description"]',
+    '#js-pjax',
+    'meta[property^="og:"]',
+]
+
+const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+}
+initTheme()</script><!-- google adsense--><!-- search--><!-- music--></body></html><script>const posts=["2024/04/03/gdb/gdb调试/","2024/04/02/直接初始化与复制初始化/","2024/04/02/智能指针/","2024/04/02/左右值与move/","2024/04/02/tuple/"];function toRandomPost(){ pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]); }</script>
