@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LevelDB 源码分析(四) - Compaction 文件的选择 | tiny-sky 的个人博客</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.ico"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=1.7.5"><!-- inject head--><link rel="stylesheet" href="https://cdn2.codesign.qq.com/icons/7pOrz0WXB5ZWJPX/latest/iconfont.css"><!-- aplayer--><!-- swiper--><!-- Open Graph--><meta name="description" content="背景leveldb 是一个写效率十分高的存储引擎, 一次写操作只需要顺序写日志(WAL)，内存跳表插入(logn) 但是如此以来读性能就有所下降，在最差的情况下可能需要查找以下所有文件 1MemTable --&amp;gt; Immutable MemTable --&amp;gt; Level 0 files"><!-- pwa--><script>(win => {
+        win.saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay,
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        }
+
+        const DarkModeStatus = localStorage.getItem('theme')
+        if (DarkModeStatus !== null) {
+            if (DarkModeStatus === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark')
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light')
+            }
+        }
+
+        const asideStatus = saveToLocal.get('aside-status')
+        if (asideStatus !== undefined) {
+            if (asideStatus === 'hide') {
+                document.documentElement.classList.add('hide-aside')
+            } else {
+                document.documentElement.classList.remove('hide-aside')
+            }
+        }
+
+        win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+            const link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = url
+            if (id) link.id = id
+            link.onerror = reject
+            link.onload = link.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+            }
+            document.head.appendChild(link)
+        })
+
+        win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+            const script = document.createElement('script')
+            script.src = url
+            script.async = true
+            script.onerror = reject
+            script.onload = script.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+            }
+
+            Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+            })
+
+            document.head.appendChild(script)
+        })
+    }
+)(window)
+
+console.log(
+    "%c Program: Hexo %c Theme: Solitude %c Version: v1.7.5",
+    "border-radius:5px 0 0 5px;padding: 5px 10px;color:white;background:#ff3842;",
+    "padding: 5px 10px;color:white;background:#3e9f50;",
+    "border-radius:0 5px 5px 0;padding: 5px 10px;background:#0084ff;color:white;"
+);</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2024-03-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.png'
+    },
+    copyright: false,
+    highlight: {
+        enable: true,
+        limit: 200,
+        expand: true,
+        copy: true,
+        syntax: 'highlight.js'
+    },
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"f12":"开发者模式已打开，请遵循GPL协议。"},
+    aside: {
+        sayhello: {
+            morning: '一日之计在于晨',
+            noon: '吃饱了才有力气干活',
+            afternoon: '集中精力，攻克难关',
+            night: '不要太劳累了，早睡更健康',
+            goodnight: '睡个好觉，保证精力充沛',
+        },
+        sayhello2: ["🤖️ 数码科技爱好者","🔍 分享与热心帮助","🔨 设计开发一条龙","🏃 脚踏实地行动派","🧱 团队小组发动机"],
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    post_ai: false
+};</script><meta name="generator" content="Hexo 7.1.1"></head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude st-close-fill"></i></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude st-moon-clear-fill"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude st-side-bar-fill"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">11</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude st-moon-clear-fill"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/c/">c++<sup>5</sup></a><a href="/tags/database/">database<sup>4</sup></a><a href="/tags/leveldb/">leveldb<sup>5</sup></a><a href="/tags/gdb/">gdb<sup>1</sup></a><a href="/tags/CMU-15445/">CMU-15445<sup>1</sup></a></div></div></div></div><!-- keyboard--><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude st-more-fill"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">LevelDB 源码分析(四) - Compaction 文件的选择</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);"><i class="solitude st-dashboard-fill"></i></a></div><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude st-arrow-up-line"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude st-menu-line"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/img/blog/blog10.jpg" alt="LevelDB 源码分析(四) - Compaction 文件的选择"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/database/">database</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database/"><span class="tags-name tags-punctuation">database</span></a><a class="post-meta__tags" href="/tags/leveldb/"><span class="tags-name tags-punctuation">leveldb</span></a></div></div></div></div><h1 class="post-title">LevelDB 源码分析(四) - Compaction 文件的选择</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2024-06-19 20:38:42"><i class="post-meta-icon solitude st-calendar-todo-fill"></i><time datetime="2024-06-19T12:38:42.187Z">2024-06-19T12:38:42.187Z</time></span><span class="post-meta-date" title="最后更新于 2024-06-20 11:05:10"><i class="post-meta-icon solitude st-refresh-line"></i><time datetime="2024-06-20T03:05:10.262Z">2024-06-20T03:05:10.262Z</time></span><a class="post-meta-pv" href="/2024/06/19/database/Compaction/" title="文章热度"><i class="post-meta-icon solitude st-fire-fill"></i></a></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>leveldb 是一个写效率十分高的存储引擎, 一次写操作只需要顺序写日志(WAL)，内存跳表插入(logn)</p>
+<p>但是如此以来读性能就有所下降，在最差的情况下可能需要查找以下所有文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MemTable --&gt; Immutable MemTable --&gt; Level 0 files --&gt; Level 1 files --&gt;Level 2 files ......--&gt;Level 6 files</span><br></pre></td></tr></table></figure>
+<p>所以引入 Compaction 可以带来如下好处</p>
+<ul>
+<li>平衡读写差异，将相关文件进行合并</li>
+<li>删除过时数据，减少数据量</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>Compaction 是通过后台线程调用 BackgroundCompaction 来触发，上一章中我们分析了如何触发 Compaction 并分析了当中的 <a href="./TableBuilder.md">Minor Compaction</a> ，本文将关注当中的 Major Compaction (SSTable 当中的 Compaction)</p>
+<p><img src="/../../img/blogs/Compaction/1.png"></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/tiny-sky/leveldb/blob/main/db/db_impl.cc#L702">BackgroundCompaction</a> 主要有两个部分组成</p>
+<h4 id="Minor-Compaction"><a href="#Minor-Compaction" class="headerlink" title="Minor Compaction"></a>Minor Compaction</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (imm_ != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">    <span class="built_in">CompactMemTable</span>();</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>用来检测当前是否存在 Immutable ，如果存在则将该 Immutable -&gt; SSTable</p>
+<h4 id="Manual-Compaction"><a href="#Manual-Compaction" class="headerlink" title="Manual Compaction"></a>Manual Compaction</h4><p>顾名思义 Manual Compaction，即为手动压缩</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">bool</span> is_manual = (manual_compaction_ != <span class="literal">nullptr</span>);</span><br><span class="line">InternalKey manual_end;</span><br><span class="line"> <span class="keyword">if</span> (is_manual) &#123;</span><br><span class="line">  ManualCompaction* m = manual_compaction_;</span><br><span class="line">  c = versions_-&gt;<span class="built_in">CompactRange</span>(m-&gt;level, m-&gt;begin, m-&gt;end);</span><br><span class="line">  m-&gt;done = (c == <span class="literal">nullptr</span>);</span><br><span class="line">  <span class="keyword">if</span> (c != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">    manual_end = c-&gt;<span class="built_in">input</span>(<span class="number">0</span>, c-&gt;<span class="built_in">num_input_files</span>(<span class="number">0</span>) - <span class="number">1</span>)-&gt;largest;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  c = versions_-&gt;<span class="built_in">PickCompaction</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>is_manual 是一个 bool 值，通过该值来判断是否执行 Manual Compaction, 而该值是通过 manual_compaction_ 是否为 nullptr 来确定，而 manual_compaction_ 是在 leveldb 对外接口 <a target="_blank" rel="noopener" href="https://github.com/tiny-sky/leveldb/blob/main/db/db_impl.cc#L582">CompactRange</a> 中设置,相当是对外提供手动 Compaction 的接口</p>
+<h4 id="Major-Compaction"><a href="#Major-Compaction" class="headerlink" title="Major Compaction"></a>Major Compaction</h4><p>Major Compaction 核心便是在 level 和 level + 1 层中进行 Compaction 操作，所以第一步便是需要确定参与 Compaction 的 level 层级以及文件，而这便是由 PickCompaction 决定</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">c = versions_-&gt;<span class="built_in">PickCompaction</span>();</span><br></pre></td></tr></table></figure>
+
+<h2 id="Compaction-文件的选择"><a href="#Compaction-文件的选择" class="headerlink" title="Compaction 文件的选择"></a>Compaction 文件的选择</h2><h3 id="level-n-的文件选择"><a href="#level-n-的文件选择" class="headerlink" title="level(n)的文件选择"></a>level(n)的文件选择</h3><p>并不是每一次调用 PickCompaction 都可以找出 level 层级与文件，这取决于两个因素</p>
+<ul>
+<li>current_-&gt;compaction_score_ &gt;&#x3D; 1 : 一个 level 层级的文件太多，需要 Compaction 到 level + 1 层</li>
+<li>current_-&gt;file_to_compact_ !&#x3D; nullptr : 一个文件 seek 的次数太多，优化读性能，进行 Compaction</li>
+</ul>
+<h4 id="由文件-seek-过多引发的-Compaction"><a href="#由文件-seek-过多引发的-Compaction" class="headerlink" title="由文件 seek 过多引发的 Compaction"></a>由文件 seek 过多引发的 Compaction</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">bool</span> seek_compaction = (current_-&gt;file_to_compact_ != <span class="literal">nullptr</span>);</span><br><span class="line"><span class="keyword">if</span> (seek_compaction) &#123;</span><br><span class="line">    level = current_-&gt;file_to_compact_level_; <span class="comment">// 文件层级</span></span><br><span class="line">    c = <span class="keyword">new</span> <span class="built_in">Compaction</span>(options_, level);</span><br><span class="line">    c-&gt;inputs_[<span class="number">0</span>].<span class="built_in">push_back</span>(current_-&gt;file_to_compact_); <span class="comment">// FileMetaDate</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>当一个文件 seek 过多时，会在当前版本中记录它的层级与文件元数据 FileMetaDate，并将其写入到 inputs_[0] 中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">inputs_ 的类型是 std::vector&lt;leveldb::FileMetaData *&gt; leveldb::Compaction::inputs_[2]</span><br><span class="line"></span><br><span class="line">它由两个由记录 FileMetaData * 的 vector 组成</span><br><span class="line">inputs_[0] : level 层的文件</span><br><span class="line">inputs_[1] : level + 1 层的文件</span><br></pre></td></tr></table></figure>
+<h4 id="由文件数量引发的-Compaction"><a href="#由文件数量引发的-Compaction" class="headerlink" title="由文件数量引发的 Compaction"></a>由文件数量引发的 Compaction</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">bool</span> size_compaction = (current_-&gt;compaction_score_ &gt;= <span class="number">1</span>);</span><br><span class="line"><span class="keyword">if</span> (size_compaction) &#123;</span><br><span class="line">    level = current_-&gt;compaction_level_; <span class="comment">// 需要 Compaction 的层级</span></span><br><span class="line">    <span class="built_in">assert</span>(level &gt;= <span class="number">0</span>);</span><br><span class="line">    <span class="built_in">assert</span>(level + <span class="number">1</span> &lt; config::kNumLevels);</span><br><span class="line">    c = <span class="keyword">new</span> <span class="built_in">Compaction</span>(options_, level);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Pick the first file that comes after compact_pointer_[level]</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; current_-&gt;files_[level].<span class="built_in">size</span>(); i++) &#123;</span><br><span class="line">      FileMetaData* f = current_-&gt;files_[level][i];</span><br><span class="line">      <span class="keyword">if</span> (compact_pointer_[level].<span class="built_in">empty</span>() ||</span><br><span class="line">          icmp_.<span class="built_in">Compare</span>(f-&gt;largest.<span class="built_in">Encode</span>(), compact_pointer_[level]) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        c-&gt;inputs_[<span class="number">0</span>].<span class="built_in">push_back</span>(f);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (c-&gt;inputs_[<span class="number">0</span>].<span class="built_in">empty</span>()) &#123;</span><br><span class="line">      <span class="comment">// Wrap-around to the beginning of the key space</span></span><br><span class="line">      c-&gt;inputs_[<span class="number">0</span>].<span class="built_in">push_back</span>(current_-&gt;files_[level][<span class="number">0</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>当某一个层级的文件数量过多时，当前版本会记录需要 Compaction 的层级。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">leveldb 会为每一层进行打分，如果该层的分数大于等于 1,则标记为需要 Compaction,</span><br><span class="line">打分逻辑在 VersionSet::Finalize 中，Finaline 会在 VersionSet::Recover 与 VersionSet::LogAndApply 中被调用</span><br></pre></td></tr></table></figure>
+
+<p>之后从该层中选出一个文件插入 inputs_[0] 中，如果没有符合要求的而插入 当前版本 level 层中的第一个文件</p>
+<p>这里的 compact_pointer_[level] 是是什么含义？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">compact_pointer_ 的定义为 std::string compact_pointer_[7]</span><br><span class="line">即一个 string 类型的数组，7代表 leveldb的最高层级，</span><br><span class="line">相当于给每一层记录一个string，该值为上一次 Compaction 中该层的最大key</span><br><span class="line"></span><br><span class="line">好处是方便本次 Compaction 从上一次记录的最大 Key之后的文件开始</span><br><span class="line">因为除 level 0层之外，其他层都是有序且无重叠，在该Key之前的文件已经被 Compaction 过</span><br></pre></td></tr></table></figure>
+<p>在之后的代码分析中会涉及到</p>
+<p>但是由于 level 0 层中的文件并不是有序的，且存在文件间重叠的现象，所以需要将该层中所有文件插入到 inputs_[0] 中进行后续处理</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Files in level 0 may overlap each other, so pick up all overlapping ones</span></span><br><span class="line">  <span class="keyword">if</span> (level == <span class="number">0</span>) &#123;</span><br><span class="line">    InternalKey smallest, largest;</span><br><span class="line">    <span class="built_in">GetRange</span>(c-&gt;inputs_[<span class="number">0</span>], &amp;smallest, &amp;largest);</span><br><span class="line">    <span class="comment">// Note that the next call will discard the file we placed in</span></span><br><span class="line">    <span class="comment">// c-&gt;inputs_[0] earlier and replace it with an overlapping set</span></span><br><span class="line">    <span class="comment">// which will include the picked file.</span></span><br><span class="line">    current_-&gt;<span class="built_in">GetOverlappingInputs</span>(<span class="number">0</span>, &amp;smallest, &amp;largest, &amp;c-&gt;inputs_[<span class="number">0</span>]);</span><br><span class="line">    <span class="built_in">assert</span>(!c-&gt;inputs_[<span class="number">0</span>].<span class="built_in">empty</span>());</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="level-n-1-的文件选择"><a href="#level-n-1-的文件选择" class="headerlink" title="level(n + 1)的文件选择"></a>level(n + 1)的文件选择</h3><p>level n+1 层文件的选择位于 <a target="_blank" rel="noopener" href="https://github.com/google/leveldb/blob/main/db/version_set.cc#L1385">SetupOtherInputs</a> </p>
+<p><img src="/../../img/blogs/Compaction/3.png"></p>
+<p>为了方便表示，每一个文件用横线表示，横线的长度代表 key 的范围，所以 level 层的文件 key 范围比 level + 1 层的 key 范围 大，但是 level + 1 层的文件个数相比而言就会多些</p>
+<p>在选择 level n+1 层之前，leveldb做了一个优化，将临近的文件也加入到 Compaction 集合中</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> level = c-&gt;<span class="built_in">level</span>();</span><br><span class="line">InternalKey smallest, largest;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 临近文件也加入到 inputs_[0]中</span></span><br><span class="line"><span class="built_in">AddBoundaryInputs</span>(icmp_, current_-&gt;files_[level], &amp;c-&gt;inputs_[<span class="number">0</span>]);</span><br><span class="line"><span class="built_in">GetRange</span>(c-&gt;inputs_[<span class="number">0</span>], &amp;smallest, &amp;largest); <span class="comment">// 重新计算范围</span></span><br></pre></td></tr></table></figure>
+<p>如下图所示</p>
+<p><img src="/../../img/blogs/Compaction/2.png"></p>
+<p>A 中的 largets key 与 B 中的 smallest key </p>
+<ul>
+<li>user key 相同，都是 key6</li>
+<li>B 的 SequenceNumber 比 A 中的大</li>
+</ul>
+<p>对于这种情况，一般来说 key 是连续的，所以将该文件也加入到 Compaction 中，可以避免相同的 Key 分布在两个层级中，减少查找的开销同时避免多次 Compaction</p>
+<p>之后添加 level n+1 层的文件</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 根据 level 层文件的范围添加 level + 1 层</span></span><br><span class="line">current_-&gt;<span class="built_in">GetOverlappingInputs</span>(level + <span class="number">1</span>, &amp;smallest, &amp;largest,</span><br><span class="line">                                 &amp;c-&gt;inputs_[<span class="number">1</span>]);</span><br><span class="line"><span class="built_in">AddBoundaryInputs</span>(icmp_, current_-&gt;files_[level + <span class="number">1</span>], &amp;c-&gt;inputs_[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据 level 与 level + 1 计算最小key与最大key</span></span><br><span class="line">InternalKey all_start, all_limit;</span><br><span class="line"><span class="built_in">GetRange2</span>(c-&gt;inputs_[<span class="number">0</span>], c-&gt;inputs_[<span class="number">1</span>], &amp;all_start, &amp;all_limit);</span><br></pre></td></tr></table></figure>
+<p>同样也对 level + 1 层进行了添加临近文件的优化，之后联合这两个层级计算key的范围</p>
+<p>原本这样就完成了对 level 与 level + 1 层的文件选择，但是 leveldb 还添加了一个优化：在不影响 level + 1 层文件下尽可能的增加 level 层需要 Compaction 的文件，同时增加的文件不能超出本层的文件大小限制</p>
+<p>如下图所示：</p>
+<p><img src="/../../img/blogs/Compaction/4.png"></p>
+<p>A 是 level 层被选出需要 Compaction 的文件，根据其范围可以在 level n + 1 层中找出对应的 C、D、E, 所以此时可以增加 B 文件，因为 B 文件的引入并不会引起 level n + 1 层文件的变化</p>
+<p>现在分析如下图：</p>
+<p><img src="/../../img/blogs/Compaction/5.png"></p>
+<p>如果引入 B，则 Compaction 到 level + 1 的文件会与 F 发生重叠，因为当前 B 中的文件已经与 F 有重叠部分，这样就打破了 level 1 ～ level 6 之间不能相互重叠的限制</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// See if we can grow the number of inputs in &quot;level&quot; without</span></span><br><span class="line"> <span class="comment">// changing the number of &quot;level+1&quot; files we pick up.</span></span><br><span class="line"> <span class="keyword">if</span> (!c-&gt;inputs_[<span class="number">1</span>].<span class="built_in">empty</span>()) &#123;</span><br><span class="line">   std::vector&lt;FileMetaData*&gt; expanded0;</span><br><span class="line">   current_-&gt;<span class="built_in">GetOverlappingInputs</span>(level, &amp;all_start, &amp;all_limit, &amp;expanded0);</span><br><span class="line">   <span class="built_in">AddBoundaryInputs</span>(icmp_, current_-&gt;files_[level], &amp;expanded0);</span><br><span class="line">   <span class="type">const</span> <span class="type">int64_t</span> inputs0_size = <span class="built_in">TotalFileSize</span>(c-&gt;inputs_[<span class="number">0</span>]);</span><br><span class="line">   <span class="type">const</span> <span class="type">int64_t</span> inputs1_size = <span class="built_in">TotalFileSize</span>(c-&gt;inputs_[<span class="number">1</span>]);</span><br><span class="line">   <span class="type">const</span> <span class="type">int64_t</span> expanded0_size = <span class="built_in">TotalFileSize</span>(expanded0);</span><br><span class="line">   <span class="keyword">if</span> (expanded0.<span class="built_in">size</span>() &gt; c-&gt;inputs_[<span class="number">0</span>].<span class="built_in">size</span>() &amp;&amp;</span><br><span class="line">       inputs1_size + expanded0_size &lt;</span><br><span class="line">           <span class="built_in">ExpandedCompactionByteSizeLimit</span>(options_)) &#123;</span><br><span class="line">     InternalKey new_start, new_limit;</span><br><span class="line">     <span class="built_in">GetRange</span>(expanded0, &amp;new_start, &amp;new_limit);</span><br><span class="line">     std::vector&lt;FileMetaData*&gt; expanded1;</span><br><span class="line">     current_-&gt;<span class="built_in">GetOverlappingInputs</span>(level + <span class="number">1</span>, &amp;new_start, &amp;new_limit,</span><br><span class="line">                                    &amp;expanded1);</span><br><span class="line">     <span class="built_in">AddBoundaryInputs</span>(icmp_, current_-&gt;files_[level + <span class="number">1</span>], &amp;expanded1);</span><br><span class="line">     <span class="keyword">if</span> (expanded1.<span class="built_in">size</span>() == c-&gt;inputs_[<span class="number">1</span>].<span class="built_in">size</span>()) &#123;</span><br><span class="line">       smallest = new_start;</span><br><span class="line">       largest = new_limit;</span><br><span class="line">       c-&gt;inputs_[<span class="number">0</span>] = expanded0;</span><br><span class="line">       c-&gt;inputs_[<span class="number">1</span>] = expanded1;</span><br><span class="line">       <span class="built_in">GetRange2</span>(c-&gt;inputs_[<span class="number">0</span>], c-&gt;inputs_[<span class="number">1</span>], &amp;all_start, &amp;all_limit);</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>之后通过这两层文件的 smallest key 与 largest key 计算与其祖父母的重叠文件(level + 2 层文件)</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Compute the set of grandparent files that overlap this compaction</span></span><br><span class="line"><span class="comment">// (parent == level+1; grandparent == level+2)</span></span><br><span class="line"><span class="keyword">if</span> (level + <span class="number">2</span> &lt; config::kNumLevels) &#123;</span><br><span class="line">  current_-&gt;<span class="built_in">GetOverlappingInputs</span>(level + <span class="number">2</span>, &amp;all_start, &amp;all_limit,</span><br><span class="line">                                 &amp;c-&gt;grandparents_);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>计算 compact_pointer_</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Update the place where we will do the next compaction for this level.</span></span><br><span class="line"><span class="comment">// We update this immediately instead of waiting for the VersionEdit</span></span><br><span class="line"><span class="comment">// to be applied so that if the compaction fails, we will try a different</span></span><br><span class="line"><span class="comment">// key range next time.</span></span><br><span class="line">compact_pointer_[level] = largest.<span class="built_in">Encode</span>().<span class="built_in">ToString</span>();</span><br><span class="line">c-&gt;edit_.<span class="built_in">SetCompactPointer</span>(level, largest);</span><br></pre></td></tr></table></figure>
+
+<p>还记得前面说过 compact_pointer_[level] 记录了上一次 PickCompaction 中 level 层的最大 key ，方便下一次 PickCompaction 的调用。</p>
+<p>至此，Compaction 的文件选择就结束了，有关 Compaction 具体的执行过程我们在下一章节中再分析分析 </p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><a class="post-copyright__author_img" href="/about/"><img class="post-copyright__author_img_front" src="/img/pwa/favicon.ico"></a><div class="post-copyright__author_name">tiny-sky 的个人博客</div><div class="post-copyright__author_desc">人生苦短，及时行乐</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">tiny-sky 的个人博客</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database/"><span class="tags-punctuation"></span>database<span class="tagsPageCount">4</span></a><a class="post-meta__tags" href="/tags/leveldb/"><span class="tags-punctuation"></span>leveldb<span class="tagsPageCount">5</span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/06/12/database/TableBuilder/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">LevelDB 源码分析(三) - SSTable的构建</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="author-info__top-group"><div class="author-info__sayhi" id="author-info__sayhi" onclick="sco.changeSayHelloText()">sayhello.morning</div></div></div><div class="avatar-img-group"><img class="avatar-img" alt="头像" src="/img/tiny-sky.png"><div class="avatar-sticker"><img class="avatar-sticker-img" src="https://7.isyangs.cn/34/65f2e4e0423cc-34.png" alt="心情贴纸"></div></div><div class="author-info__description_group"><div class="author-info__description">分享自己对编程的<b>热爱</b>，对美好生活的<b>向往</b>。</div><div class="author-info__description2">相信你可以在这里找到对你有用的知识和教程。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/about/"><div class="author-info__name">tiny-sky</div><div class="author-info__desc">人生苦短，及时行乐</div></a><div class="card-info-social-icons is-center"><a class="social-icon" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><a class="social-icon" href="tiny-sky:goto.age@gmail.com" title="Mail"><i class="solitude  st-mail-line"></i></a></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude st-menu-line"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%9E%90"><span class="toc-text">分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Minor-Compaction"><span class="toc-text">Minor Compaction</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Manual-Compaction"><span class="toc-text">Manual Compaction</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Major-Compaction"><span class="toc-text">Major Compaction</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Compaction-%E6%96%87%E4%BB%B6%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-text">Compaction 文件的选择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#level-n-%E7%9A%84%E6%96%87%E4%BB%B6%E9%80%89%E6%8B%A9"><span class="toc-text">level(n)的文件选择</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%B1%E6%96%87%E4%BB%B6-seek-%E8%BF%87%E5%A4%9A%E5%BC%95%E5%8F%91%E7%9A%84-Compaction"><span class="toc-text">由文件 seek 过多引发的 Compaction</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%B1%E6%96%87%E4%BB%B6%E6%95%B0%E9%87%8F%E5%BC%95%E5%8F%91%E7%9A%84-Compaction"><span class="toc-text">由文件数量引发的 Compaction</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#level-n-1-%E7%9A%84%E6%96%87%E4%BB%B6%E9%80%89%E6%8B%A9"><span class="toc-text">level(n + 1)的文件选择</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude st-map-line"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/06/19/database/Compaction/" title="LevelDB 源码分析(四) - Compaction 文件的选择"><img alt="LevelDB 源码分析(四) - Compaction 文件的选择" src="/img/blog/blog10.jpg"></a><div class="content"><a class="title" href="/2024/06/19/database/Compaction/" title="LevelDB 源码分析(四) - Compaction 文件的选择">LevelDB 源码分析(四) - Compaction 文件的选择</a><a class="article-recent_post_categories" href="/2024/06/19/database/Compaction/">database</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/12/database/TableBuilder/" title="LevelDB 源码分析(三) - SSTable的构建"><img alt="LevelDB 源码分析(三) - SSTable的构建" src="/img/blog/blog9.jpg"></a><div class="content"><a class="title" href="/2024/06/12/database/TableBuilder/" title="LevelDB 源码分析(三) - SSTable的构建">LevelDB 源码分析(三) - SSTable的构建</a><a class="article-recent_post_categories" href="/2024/06/12/database/TableBuilder/">database</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/01/skills/Hash/" title="哈希冲突的解决方式"><img alt="哈希冲突的解决方式" src="/img/blog/blog6.jpg"></a><div class="content"><a class="title" href="/2024/05/01/skills/Hash/" title="哈希冲突的解决方式">哈希冲突的解决方式</a><a class="article-recent_post_categories" href="/2024/05/01/skills/Hash/">skills</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/01/database/BloomFilter/" title="LevelDB 源码分析(二) - BloomFilter"><img alt="LevelDB 源码分析(二) - BloomFilter" src="/img/blog/blog7.jpg"></a><div class="content"><a class="title" href="/2024/05/01/database/BloomFilter/" title="LevelDB 源码分析(二) - BloomFilter">LevelDB 源码分析(二) - BloomFilter</a><a class="article-recent_post_categories" href="/2024/05/01/database/BloomFilter/">database</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/29/database/LRUCache/" title="LevelDB 源码分析(一) - LRUCache"><img alt="LevelDB 源码分析(一) - LRUCache" src="/img/blog/blog8.jpg"></a><div class="content"><a class="title" href="/2024/04/29/database/LRUCache/" title="LevelDB 源码分析(一) - LRUCache">LevelDB 源码分析(一) - LRUCache</a><a class="article-recent_post_categories" href="/2024/04/29/database/LRUCache/">database</a></div></div></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span class="solitude">Solitude</span></div><div class="footer-bar-description">来自tiny-sky 的个人博客 - 人生苦短，及时行乐的文章</div><a class="footer-bar-link" href="/">了解更多</a></div><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/img/pwa/favicon.ico" alt="返回顶部"></div><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/xiyou-linuxer" title="GithubGroup"><i class="solitude  st-github-line"></i></a></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="归档">归档</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div><div class="footer-group"><h3 class="footer-title">服务</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://aliyun.com/" title="阿里云">阿里云</a><a class="footer-item" target="_blank" rel="noopener" href="https://summer-ospp.ac.cn/" title="OSPP">OSPP</a><a class="footer-item" target="_blank" rel="noopener" href="https://summerofcode.withgoogle.com/" title="GSOC">GSOC</a></div></div><div class="footer-group"><h3 class="footer-title">收藏</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://csdiy.wiki/" title="CSDIY">CSDIY</a><a class="footer-item" target="_blank" rel="noopener" href="https://xiaolincoding.com/" title="小林Coding">小林Coding</a><a class="footer-item" target="_blank" rel="noopener" href="https://subingwen.cn/" title="爱编程的大丙">爱编程的大丙</a></div></div><div class="footer-group"><h3 class="footer-title">网站</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://leetcode.cn/" title="LeetCode">LeetCode</a><a class="footer-item" target="_blank" rel="noopener" href="https://chat.openai.com/" title="ChatGPT">ChatGPT</a></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2024 By&nbsp;<a class="footer-bar-link" href="/">tiny-sky</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="主题">主题</a><a class="footer-bar-link cc" href="/null" aria-label="copyright"><i class="solitude st-copyright-line"></i><i class="solitude st-creative-commons-by-line"></i><i class="solitude st-creative-commons-nc-line"></i><i class="solitude st-creative-commons-nd-line"></i></a></div></div></div></footer></div><!-- inject body--><div><script src="/js/main.js?v=1.7.5"></script><script src="/js/utils.js?v=1.7.5"></script><script src="/js/third_party/universe.min.js?v=1.7.5"></script><script>dark()
+</script><script src="https://cdn.staticfile.net/pjax/0.2.8/pjax.min.js"></script><script src="https://cdn.staticfile.net/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdn.staticfile.net/pace/1.2.4/pace.min.js"></script></div><div id="js-pjax"><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: 'post',
+    toc: true,
+    comment: false,
+}
+</script></div><!-- newest comment--><!-- pjax--><script>let pjaxSelectors = [
+    'title',
+    '#body-wrap',
+    '#site-config',
+    'meta[name="description"]',
+    '#js-pjax',
+    'meta[property^="og:"]',
+]
+
+const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- theme--><script>initTheme = () => {
+    //let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let isDarkMode = true;
+    const cachedMode = saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+}
+initTheme()</script><!-- google adsense--><!-- search--><!-- music--></body></html><script>const posts=["2024/06/19/database/Compaction/","2024/06/12/database/TableBuilder/","2024/05/01/skills/Hash/","2024/05/01/database/BloomFilter/","2024/04/29/database/LRUCache/","2024/04/26/c++/多重指针/","2024/04/03/gdb/gdb调试/","2024/04/02/c++/直接初始化与复制初始化/","2024/04/02/c++/智能指针/","2024/04/02/c++/左右值与move/","2024/04/02/c++/tuple/"];function toRandomPost(){ pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]); }</script>
