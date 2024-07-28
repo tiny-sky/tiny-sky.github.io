@@ -1,0 +1,292 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DDIA-数据存储与检索 | tiny-sky 的个人博客</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.ico"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=1.7.5"><!-- inject head--><link rel="stylesheet" href="https://cdn2.codesign.qq.com/icons/7pOrz0WXB5ZWJPX/latest/iconfont.css"><!-- aplayer--><!-- swiper--><!-- Open Graph--><meta name="description" content="背景对于数据库来说，向它插入数据，它就保存数据，向它查询，它就返回那些数据，根据上文，当确定数据库的数据格式(文档模型，关系模型，图状模型)以及对应的查询语言(SQL、命令式查询)之后，本文将从数据库的角度来探索如何存入数据以及在受到查询时，如何找到数据。 数据库核心123456789#!&amp;#x2F;bi"><!-- pwa--><script>(win => {
+        win.saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay,
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        }
+
+        const DarkModeStatus = localStorage.getItem('theme')
+        if (DarkModeStatus !== null) {
+            if (DarkModeStatus === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark')
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light')
+            }
+        }
+
+        const asideStatus = saveToLocal.get('aside-status')
+        if (asideStatus !== undefined) {
+            if (asideStatus === 'hide') {
+                document.documentElement.classList.add('hide-aside')
+            } else {
+                document.documentElement.classList.remove('hide-aside')
+            }
+        }
+
+        win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+            const link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = url
+            if (id) link.id = id
+            link.onerror = reject
+            link.onload = link.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+            }
+            document.head.appendChild(link)
+        })
+
+        win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+            const script = document.createElement('script')
+            script.src = url
+            script.async = true
+            script.onerror = reject
+            script.onload = script.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+            }
+
+            Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+            })
+
+            document.head.appendChild(script)
+        })
+    }
+)(window)
+
+console.log(
+    "%c Program: Hexo %c Theme: Solitude %c Version: v1.7.5",
+    "border-radius:5px 0 0 5px;padding: 5px 10px;color:white;background:#ff3842;",
+    "padding: 5px 10px;color:white;background:#3e9f50;",
+    "border-radius:0 5px 5px 0;padding: 5px 10px;background:#0084ff;color:white;"
+);</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2024-03-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.png'
+    },
+    copyright: false,
+    highlight: {
+        enable: true,
+        limit: 200,
+        expand: true,
+        copy: true,
+        syntax: 'highlight.js'
+    },
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"f12":"开发者模式已打开，请遵循GPL协议。"},
+    aside: {
+        sayhello: {
+            morning: '一日之计在于晨',
+            noon: '吃饱了才有力气干活',
+            afternoon: '集中精力，攻克难关',
+            night: '不要太劳累了，早睡更健康',
+            goodnight: '睡个好觉，保证精力充沛',
+        },
+        sayhello2: ["🤖️ 数码科技爱好者","🔍 分享与热心帮助","🔨 设计开发一条龙","🏃 脚踏实地行动派","🧱 团队小组发动机"],
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    post_ai: false
+};</script><meta name="generator" content="Hexo 7.1.1"></head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude st-close-fill"></i></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude st-moon-clear-fill"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude st-side-bar-fill"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">16</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">6</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude st-moon-clear-fill"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/c/">c++<sup>5</sup></a><a href="/tags/database/">database<sup>8</sup></a><a href="/tags/leveldb/">leveldb<sup>6</sup></a><a href="/tags/gdb/">gdb<sup>1</sup></a><a href="/tags/CMU-15445/">CMU-15445<sup>1</sup></a><a href="/tags/Distributed-computing/">Distributed computing<sup>3</sup></a></div></div></div></div><!-- keyboard--><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude st-more-fill"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">DDIA-数据存储与检索</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);"><i class="solitude st-dashboard-fill"></i></a></div><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude st-arrow-up-line"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude st-menu-line"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/img/blog/blog14.jpg" alt="DDIA-数据存储与检索"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database/"><span class="tags-name tags-punctuation">database</span></a><a class="post-meta__tags" href="/tags/Distributed-computing/"><span class="tags-name tags-punctuation">Distributed computing</span></a></div></div></div></div><h1 class="post-title">DDIA-数据存储与检索</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2024-07-27 10:02:40"><i class="post-meta-icon solitude st-calendar-todo-fill"></i><time datetime="2024-07-27T02:02:40.971Z">2024-07-27T02:02:40.971Z</time></span><span class="post-meta-date" title="最后更新于 2024-07-28 17:18:06"><i class="post-meta-icon solitude st-refresh-line"></i><time datetime="2024-07-28T09:18:06.001Z">2024-07-28T09:18:06.001Z</time></span><a class="post-meta-pv" href="/2024/07/27/DDIA/storage/" title="文章热度"><i class="post-meta-icon solitude st-fire-fill"></i></a></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>对于数据库来说，向它插入数据，它就保存数据，向它查询，它就返回那些数据，根据上文，当确定数据库的数据格式(文档模型，关系模型，图状模型)以及对应的查询语言(SQL、命令式查询)之后，本文将从数据库的角度来探索如何存入数据以及在受到查询时，如何找到数据。</p>
+<span id="more"></span>
+
+<h2 id="数据库核心"><a href="#数据库核心" class="headerlink" title="数据库核心"></a>数据库核心</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">db_set</span></span> () &#123;</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$1</span>,<span class="variable">$2</span>&quot;</span> &gt;&gt; database</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">db_get</span></span> () &#123;</span><br><span class="line">    grep <span class="string">&quot;^<span class="variable">$1</span>,&quot;</span> database | sed -e <span class="string">&quot;s/^<span class="variable">$1</span>,//&quot;</span> | <span class="built_in">tail</span> -n 1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这两个函数实现了一个 KV 存储，当调用 db_set key value,将在 database 中保存 key value, 调用 db_get key ,会返回 key 对应的 value</p>
+<p>它底层的存储格式其实非常简单 : 一个纯文本文件。其中每行包含一个key-value对，用逗号分隔 (大致像一个CSV文件，忽略转义问题) 。每次调用db_set即追加新内容到文件未尾，因此，如果多次更新某个键，旧版本的值不会被覆盖 ，而是需要查看文件中最后一次出现的键来找到最新的值 (因此在db_get中使用tail -n 1) 。</p>
+<p>但是一旦该文件保存了大量的数据，查找性能将会非常的差，当文件损坏的时候，很难进行恢复，无法支持并发控制，处理错误等</p>
+<h2 id="哈希索引"><a href="#哈希索引" class="headerlink" title="哈希索引"></a>哈希索引</h2><p>对于上面所示数据库的不足，我们一一来解决，首先是查找性能。</p>
+<p>对于数组，我们知道数组下标可以充当索引，当得知该元素的下标时，就可以直接访问该元素。同样的道理，只不过这里元素之间的距离不一定是定长，所以可以记录该元素的偏移量来充当索引</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/1.png"></p>
+<p>这上听起来可能过于简单，但它的确是一个可行的方法。事实上，这就是 Bitcask 所采用的核心做法。Biteask可以提供高性能的读和写，只要所有的key可以放入内存 (因为hash map需要保存在内存中) 。而value数据量则可以超过内存大小，只需一次磁盘寻址，就可以将value从磁盘加载到内存。如果那部分数据文件已经在文件系统的缓存中，则读取根本不需要任何的磁盘I&#x2F;O。</p>
+<p>但是此时又生产了一个新的问题，当文件过大怎么办？因为只追加到一个文件，时间长了，数据量必定很大，一个好的解决方式是：将文件分为段，当文件到达一定大小的时候就关闭它</p>
+<p>这样可以对文件进行压缩，因为所有数据都以追加的形式插入文件，势必会造成，同一个key既对应着老数据，又对应着新数据</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/2.png"></p>
+<p>同样也可以对文件进行合并，因为不同段之间可能存在相同的key</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/3.png"></p>
+<p>这种 key value 索引的方式,可以在一定程度上提升读写性能，但是依然存在以下的问题：</p>
+<ol>
+<li>这种以文件存储的方式不是最佳的存储格式，所有字符都转移为 ASCII 编码，更快简单的方式是使用二进制格式</li>
+<li>当数据库崩溃时，内存中的数据将会丢失，并且数据恢复时，需要从头到尾扫描整个文件，开销不小</li>
+<li>区间查询效率并不高，例如扫描 tinysky0000 到 tinysky9999 区间的key,只能逐个哈希去查找。</li>
+</ol>
+<h2 id="SSTables-和-LSM-Tree"><a href="#SSTables-和-LSM-Tree" class="headerlink" title="SSTables 和 LSM-Tree"></a>SSTables 和 LSM-Tree</h2><p>首先是区间查询效率</p>
+<p>上面的文件结构是一组 key-vaklue 序列，且后值优于前值，在此基础上如果要求 key-value 对按 key 排序，那么临近的 key 将会在一起(如：tinysky0000 - tinysky9999)，将会大大提升区间查询效率，而这种格式称为排序字符串表，或简称为 SSTable</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/4.png"></p>
+<p>带来的好处还不止如此，因为文件结构采用分段的形式，每一个段内都是有序的，那么该段最小的一个 key 一定是第一个，那么在合并段时，将会大大提升效率</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/5.png"></p>
+<p>想法很好，但是用户可能以任意顺序输入key value,所以在内存中需要一个过渡的数据结构(红黑树，AVL树，跳表)来对用户输入进行排序，当数据量到达一定的规模时，将数据顺序写入到 SSTable 中。</p>
+<p>完整流程如下：</p>
+<ol>
+<li><p>当用户写入时，将其添加到内存中的平衡树数据结构中(例如跳表) 。这个内存中的树有时被称为内存表(Memtable)。</p>
+</li>
+<li><p>当内存表大于某个值 (通常为几兆字节) 时，将其作为SSTable文件写入磁盘。由于树已经维护了按键排序的key-value对，写磁盘可以比较高效。</p>
+</li>
+<li><p>为了处理读请求，首先尝试在内存表中查找键，然后是最新的磁盘段文件，接下来是次新的磁盘段文件，以此类推，直到找到目标 (或为空)</p>
+</li>
+<li><p>后台进程周期性地执行段合并与压缩过程，以合并多个段文件，并丢弃那些已被覆盖或删除的值。</p>
+</li>
+</ol>
+<p>上述方案可以很好地工作。但它还存在一个问题: 如果数据库崩溃，最近写入(在内存表中但尚未写入磁盘) 将会丢失。为了避免该问题，可以在磁盘上保留单独的日志，每个写入都会先追加到该日志，就像上一节所述。那个日志文件不需要按键排序，因为它的唯一目的是在崩溃后恢复内存表。每当将内存表写入SSTable时，相应的日志可以被丢弃。(这种技术称为WAL)</p>
+<p>上述算法的本质正是 LevelDB 和 RocksDB 所使用的，主要用于嵌入其他应用程序的 key-value 中，最初这个索引结构以日志结构的合并树(Log Structured Merge Tree,或LSM-Tree)命名,它建立在更早前的日志结构文件系统之上，因此，基于合并和压缩文件原理的存储结构通常称为LSM存储引擎</p>
+<h2 id="B-trees"><a href="#B-trees" class="headerlink" title="B-trees"></a>B-trees</h2><p>上述讨论的属于日志结构索引，但是目前最为广泛使用的是另一种</p>
+<p>像 SSTable 一样，B-tree也保留这按键排序的 KV 对，可以高效实现key-value查找与区间查询，但本质上却是截然不同的设计理念</p>
+<p>日志结构索引将数据分为段，并按顺序写入段，相比之下，B-tree将数据分为页，传统为4KB(有时更大),页是内部读&#x2F;写的最小单元。因为磁盘也是以固定大小的块排列。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/6.png"></p>
+<p>某一页被指定为B-tree的根，每当查找索引中的一个键时，总是从这里开始。该页面包含若干个键和对子页的引用。每个孩子都负责一个连续范围内的键。</p>
+<p>与日志结构索引相比，B-tree底层的写操作是直接使用新数据覆盖原本磁盘上的旧数据，而前者则是仅追加更新文件，并不是直接在原本数据处修改，所以为了 B-tree 可以在崩溃中恢复，常见的做法是引入额外的数据结构：预写日志(write-ahead log,WAL),也成为重做日志，每一个B-tree的修改必须先更新WAL然后再修改树本身的页</p>
+<h2 id="其他索引结构"><a href="#其他索引结构" class="headerlink" title="其他索引结构"></a>其他索引结构</h2><ol>
+<li><p>主键索引：主键索引唯一标识数据库中的一行、一个文档或一个顶点，并用于解析对这些数据的引用。</p>
+</li>
+<li><p>二级索引：二级索引可以基于key-value索引构建，但它的键不是唯一的。这些索引对执行联结操作非常重要，并可以以列表的形式存储多个行标识符，或通过追加行标识符来使键唯一。</p>
+</li>
+<li><p>多列索引：多列索引将多个字段组合成一个键，适用于需要同时查询多个字段的情况。它可以优化特定字段组合的查询，但可能无法高效处理单独查询其中一个字段的情况。</p>
+</li>
+<li><p>全文搜索与模糊索引：全文搜索索引支持对文本进行更复杂的查询，如同义词搜索、拼写错误处理等。模糊索引允许对近似值进行搜索，适用于处理拼写错误等情况。</p>
+</li>
+</ol>
+<p>对于上面的索引方式，如果在索引中直接保存行数据，则称之为聚集索引，若索引仅存储对数据行的引用则称之为非聚集索引，这两者之间存在一种折中的方式称为覆盖索引，它在索引中保存了一些表的列值，它可以只通过索引即回答某些简单的查询。</p>
+<h2 id="事务处理与分析处理"><a href="#事务处理与分析处理" class="headerlink" title="事务处理与分析处理"></a>事务处理与分析处理</h2><p>在商业数据处理的早期阶段，写入数据库通常对应于商业交易场景，例如销售、订单、支付员工工资等。尽管后来数据库扩展到了不涉及金钱交易的领域，事务一词仍然存在，主要指组成一个逻辑单元的一组读写操作。</p>
+<p>尽管数据库开始被用于许多不同种类的数据，但是其基本访问模式仍然与处理业务交易类似。根据用户的输入插入或更新记录，因为这些应用程序是交互式的，所以访问模式被称为<code>在线事务处理</code>(online transaction processing,OLTP)</p>
+<p>当然，数据库也越来越用于数据分析，通过大量的数据来统计数据(计数，求和，平均值),这种模式称之为<code>在线分析处理</code>(online analytic processing, OLAP)</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/7.png"></p>
+<p>最初，相同的数据库可以同时用于事务处理和分析查询。SQL可以同时胜任OLTP类型和OLAP类型查询。后来很多公司放弃使用OLTP系统用于分析目的，而是在单独的数据库上运行分析。这个单独的数据库被称为<code>数据仓库</code>。</p>
+<h2 id="数据仓库"><a href="#数据仓库" class="headerlink" title="数据仓库"></a>数据仓库</h2><p>由于 OLTP 系统是为高效处理日常事务（如销售、订单处理等）设计的，这些系统必须保持高可用性和低延迟。如果在OLTP数据库上直接进行临时分析查询，而这种查询往往代价很高，需要扫描大量的数据，可能会损坏并发执行事务的性能。</p>
+<p>相比之下，数据仓库则是单独的数据库，分析人员可以在不影响OLTP操作的情况下尽情地使用。数据仓库包含公司所有各种OLTP系统的只读副本。从OLTP数据库(使用周期性数据转储或连续更新流) 中提取数据，转换为分析友好的模式，执行必要的清理，然后加载到数据仓库中。将数据导入数据仓库的过程称为<code>提取-转换-加载</code><br>(Extract-Transform-Load，ETL)</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/8.png"></p>
+<p>使用单独的数据仓库而不是直接查询OLTP系统进行分析，很大的优势在于数据仓库可以针对分析访问模式进行优化。事实证明，本章前半部分讨论的索引算法适合OLTP，但不擅长应对分析查询。</p>
+<p>在下文中，将重点讨论针对分析型而优化的存储引擎。</p>
+<h3 id="OLAP数据库和数据仓库之间的差异"><a href="#OLAP数据库和数据仓库之间的差异" class="headerlink" title="OLAP数据库和数据仓库之间的差异"></a>OLAP数据库和数据仓库之间的差异</h3><p>数据仓库的数据模型最常见的是关系型，因为SQL通常适合分析查询。</p>
+<h4 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h4><p>在数据仓库的建设过程中，根据事实表与维表的关系，经常将数据模型分为星型模型、雪花模型及星座模型</p>
+<ol>
+<li>星型模型<br> 星型模型中只有一张事实表，以及0张或多张维表，事实表与维表通过主键外键相关联，维表之间不存在关联关系，当所有维表都关联到事实表时，整个图形非常像一种星星的结构，所以称之为“星型模型”。</li>
+</ol>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/9.png"></p>
+<p>对应的关系表</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/10.png"></p>
+<p>通常这种方式的分析具有很大的灵活性，但是这意味着事实表可能会变得非常庞大。像苹果或者这样的大企业，其数据仓库可能有数十PB的交易历史，其中大部分都保存在事实表中。</p>
+<ol start="2">
+<li>雪花模型<br> 当一个或多个维表没有直接连接到事实表上，而是通过其他维表连接到事实表上时，其图解就像多个雪花连接在一起，故称雪花模型。雪花模型是对星型模型的扩展。</li>
+</ol>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/11.png"></p>
+<h4 id="列式存储"><a href="#列式存储" class="headerlink" title="列式存储"></a>列式存储</h4><p>如果事实表中有着数以万行的数据，则高效的存储将成为一个具有挑战性的问题，但是如果一次查询只访问其中的4个或5个字段，则查询性能将会受到很大的影响</p>
+<p>面向列存储的想法很简单，将每列中的所有值存储在一起。如果每个列存储在一个单独的文件中，查询只需要读取和解析在该查询中使用的那些列。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%B8%89/12.png"></p>
+<p>同时面向列存储的方式非常适合压缩，如上图，他们看起来有很多重复的数据或前缀，在数据仓库中，特别有效的一种技术是位图编码</p>
+<p>虽然列存储优化了读操作，但它可能使写入操作更为复杂，特别是在需要插入或更新数据时。</p>
+<h4 id="聚合：数据立方体与物化视图"><a href="#聚合：数据立方体与物化视图" class="headerlink" title="聚合：数据立方体与物化视图"></a>聚合：数据立方体与物化视图</h4><p>物化视图：</p>
+<ol>
+<li>物化视图是在关系数据库中预先计算并存储的查询结果，不同于虚拟视图，物化视图将数据实际写入磁盘。</li>
+<li>它提供了一种缓存机制，使得重复的查询可以直接访问预计算的结果，从而提高查询效率，尤其是对于重复使用相同聚合（如COUNT、SUM、AVG、MIN或MAX）的查询。</li>
+<li>物化视图需要在底层数据更新时同步更新，这可能影响写入性能，因此在写密集型的OLTP系统中使用较少。</li>
+</ol>
+<p>数据立方体或OLAP立方体：</p>
+<ol>
+<li>数据立方体是物化视图的一种特殊形式，它按多个维度（如日期和产品）组织数据，使得可以快速聚合和分析跨多个维度的数据。</li>
+<li>在数据立方体中，数据按照特定的属性（如日期和产品）预聚合，每个维度可以沿着其轴进行进一步的聚合分析。</li>
+</ol>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本文我们简单介绍了数据库内部如何处理存储与检索。</p>
+<p>概括来讲，存储引擎分为两大类: 针对事务处理 (OLTP) 优化的架构，以及针对分析型 (OLAP) 的优化架构。</p>
+<ul>
+<li>OLTP系统通常面向用户，这意味着它们可能收到大量的交互式请求。为了处理负载，应用程序通常在每个查询中只涉及少量的记录。应用程序基于某种键来请求记录，而存储引擎使用索引来查找所请求键的数据。磁盘寻道时间往往是瓶颈。</li>
+<li>由于不是直接面对最终用户，数据仓库和类似的分析型系统相对并不大广为人知，它们主要由业务分析师使用。处理的查询请求数目远低于OLTP系统，但每个查询通常要求非常苛刻，需要在短时间内扫描数百万条记录。磁盘带宽 (不是寻道时间) 通常是瓶颈，而面向列的存储对于这种工作负载成为日益流行的解决方案。</li>
+</ul>
+<p>在OLTP方面，由两个主要流派的存储引擎：</p>
+<ul>
+<li>日志结构流派，它只允许追加式更新文件和删除过时的文件，但不会修改已写人的文件。BitCask、SSTables、LSM-tree、LevelDB 、Cassandra、HBase、Lucene等属于此类。</li>
+<li>原地更新流派，将磁盘视为可以覆盖的一组固定大小的页。B-tree是这一哲学的最典型代表，它已用于所有主要的关系数据库，以及大量的非关系数据库。</li>
+</ul>
+<p>日志结构的存储引擎是一个相对较新的方案。其关键思想是系统地将磁盘上随机访间写入转为顺序写人，由于硬盘驱动器和SSD的性能特性，可以实现更高的写入吞吐量。</p>
+<p>此外，简要介绍了一些更复杂的索引结构，以及为全内存而优化的数据库。</p>
+<p>然后，从存储引擎间接地探索了典型数据仓库的总体架构。由此说明为什么分析工作负载与OLTP如此不同: 当查询需要在大量行中顺序扫描时，索引的关联性就会显著降低。相反，最重要的是编码数据，以尽量减少磁盘读取的数据量。我们讨论了列存储如何帮助实现这一目标。</p>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><a class="post-copyright__author_img" href="/about/"><img class="post-copyright__author_img_front" src="/img/pwa/favicon.ico"></a><div class="post-copyright__author_name">tiny-sky 的个人博客</div><div class="post-copyright__author_desc">人生苦短，及时行乐</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">tiny-sky 的个人博客</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database/"><span class="tags-punctuation"></span>database<span class="tagsPageCount">8</span></a><a class="post-meta__tags" href="/tags/Distributed-computing/"><span class="tags-punctuation"></span>Distributed computing<span class="tagsPageCount">3</span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/07/26/DDIA/Model/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DDIA-数据模型与查询语言</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="author-info__top-group"><div class="author-info__sayhi" id="author-info__sayhi" onclick="sco.changeSayHelloText()">sayhello.morning</div></div></div><div class="avatar-img-group"><img class="avatar-img" alt="头像" src="/img/tiny-sky.png"><div class="avatar-sticker"><img class="avatar-sticker-img" src="https://7.isyangs.cn/34/65f2e4e0423cc-34.png" alt="心情贴纸"></div></div><div class="author-info__description_group"><div class="author-info__description">分享自己对编程的<b>热爱</b>，对美好生活的<b>向往</b>。</div><div class="author-info__description2">相信你可以在这里找到对你有用的知识和教程。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/about/"><div class="author-info__name">tiny-sky</div><div class="author-info__desc">人生苦短，及时行乐</div></a><div class="card-info-social-icons is-center"><a class="social-icon" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><a class="social-icon" href="tiny-sky:goto.age@gmail.com" title="Mail"><i class="solitude  st-mail-line"></i></a></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude st-menu-line"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E6%A0%B8%E5%BF%83"><span class="toc-text">数据库核心</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%93%88%E5%B8%8C%E7%B4%A2%E5%BC%95"><span class="toc-text">哈希索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSTables-%E5%92%8C-LSM-Tree"><span class="toc-text">SSTables 和 LSM-Tree</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#B-trees"><span class="toc-text">B-trees</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E7%B4%A2%E5%BC%95%E7%BB%93%E6%9E%84"><span class="toc-text">其他索引结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E5%A4%84%E7%90%86%E4%B8%8E%E5%88%86%E6%9E%90%E5%A4%84%E7%90%86"><span class="toc-text">事务处理与分析处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93"><span class="toc-text">数据仓库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OLAP%E6%95%B0%E6%8D%AE%E5%BA%93%E5%92%8C%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E4%B9%8B%E9%97%B4%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="toc-text">OLAP数据库和数据仓库之间的差异</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="toc-text">数据模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8"><span class="toc-text">列式存储</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%81%9A%E5%90%88%EF%BC%9A%E6%95%B0%E6%8D%AE%E7%AB%8B%E6%96%B9%E4%BD%93%E4%B8%8E%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE"><span class="toc-text">聚合：数据立方体与物化视图</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude st-map-line"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/07/27/DDIA/storage/" title="DDIA-数据存储与检索"><img alt="DDIA-数据存储与检索" src="/img/blog/blog14.jpg"></a><div class="content"><a class="title" href="/2024/07/27/DDIA/storage/" title="DDIA-数据存储与检索">DDIA-数据存储与检索</a><a class="article-recent_post_categories" href="/2024/07/27/DDIA/storage/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/26/DDIA/Model/" title="DDIA-数据模型与查询语言"><img alt="DDIA-数据模型与查询语言" src="/img/blog/blog13.jpg"></a><div class="content"><a class="title" href="/2024/07/26/DDIA/Model/" title="DDIA-数据模型与查询语言">DDIA-数据模型与查询语言</a><a class="article-recent_post_categories" href="/2024/07/26/DDIA/Model/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/26/DDIA/base/" title="DDIA-数据应用系统"><img alt="DDIA-数据应用系统" src="/img/blog/blog12.jpg"></a><div class="content"><a class="title" href="/2024/07/26/DDIA/base/" title="DDIA-数据应用系统">DDIA-数据应用系统</a><a class="article-recent_post_categories" href="/2024/07/26/DDIA/base/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/20/database/Compaction/" title="LevelDB 源码分析(五) - Compaction"><img alt="LevelDB 源码分析(五) - Compaction" src="/img/blog/blog11.jpg"></a><div class="content"><a class="title" href="/2024/06/20/database/Compaction/" title="LevelDB 源码分析(五) - Compaction">LevelDB 源码分析(五) - Compaction</a><a class="article-recent_post_categories" href="/2024/06/20/database/Compaction/">database</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/19/database/Compaction-file/" title="LevelDB 源码分析(四) - Compaction 文件选择"><img alt="LevelDB 源码分析(四) - Compaction 文件选择" src="/img/blog/blog10.jpg"></a><div class="content"><a class="title" href="/2024/06/19/database/Compaction-file/" title="LevelDB 源码分析(四) - Compaction 文件选择">LevelDB 源码分析(四) - Compaction 文件选择</a><a class="article-recent_post_categories" href="/2024/06/19/database/Compaction-file/">database</a></div></div></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span class="solitude">Solitude</span></div><div class="footer-bar-description">来自tiny-sky 的个人博客 - 人生苦短，及时行乐的文章</div><a class="footer-bar-link" href="/">了解更多</a></div><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/img/pwa/favicon.ico" alt="返回顶部"></div><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/xiyou-linuxer" title="GithubGroup"><i class="solitude  st-github-line"></i></a></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="归档">归档</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div><div class="footer-group"><h3 class="footer-title">服务</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://aliyun.com/" title="阿里云">阿里云</a><a class="footer-item" target="_blank" rel="noopener" href="https://summer-ospp.ac.cn/" title="OSPP">OSPP</a><a class="footer-item" target="_blank" rel="noopener" href="https://summerofcode.withgoogle.com/" title="GSOC">GSOC</a></div></div><div class="footer-group"><h3 class="footer-title">收藏</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://csdiy.wiki/" title="CSDIY">CSDIY</a><a class="footer-item" target="_blank" rel="noopener" href="https://xiaolincoding.com/" title="小林Coding">小林Coding</a><a class="footer-item" target="_blank" rel="noopener" href="https://subingwen.cn/" title="爱编程的大丙">爱编程的大丙</a></div></div><div class="footer-group"><h3 class="footer-title">网站</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://leetcode.cn/" title="LeetCode">LeetCode</a><a class="footer-item" target="_blank" rel="noopener" href="https://chat.openai.com/" title="ChatGPT">ChatGPT</a></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2024 By&nbsp;<a class="footer-bar-link" href="/">tiny-sky</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="主题">主题</a><a class="footer-bar-link cc" href="/null" aria-label="copyright"><i class="solitude st-copyright-line"></i><i class="solitude st-creative-commons-by-line"></i><i class="solitude st-creative-commons-nc-line"></i><i class="solitude st-creative-commons-nd-line"></i></a></div></div></div></footer></div><!-- inject body--><div><script src="/js/main.js?v=1.7.5"></script><script src="/js/utils.js?v=1.7.5"></script><script src="/js/third_party/universe.min.js?v=1.7.5"></script><script>dark()
+</script><script src="https://cdn.staticfile.net/pjax/0.2.8/pjax.min.js"></script><script src="https://cdn.staticfile.net/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdn.staticfile.net/pace/1.2.4/pace.min.js"></script></div><div id="js-pjax"><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: 'post',
+    toc: true,
+    comment: false,
+}
+</script></div><!-- newest comment--><!-- pjax--><script>let pjaxSelectors = [
+    'title',
+    '#body-wrap',
+    '#site-config',
+    'meta[name="description"]',
+    '#js-pjax',
+    'meta[property^="og:"]',
+]
+
+const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- theme--><script>initTheme = () => {
+    //let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let isDarkMode = true;
+    const cachedMode = saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+}
+initTheme()</script><!-- google adsense--><!-- search--><!-- music--></body></html><script>const posts=["2024/07/27/DDIA/storage/","2024/07/26/DDIA/Model/","2024/07/26/DDIA/base/","2024/06/20/database/Compaction/","2024/06/19/database/Compaction-file/","2024/06/12/database/TableBuilder/","2024/05/01/skills/Hash/","2024/05/01/database/BloomFilter/","2024/04/29/database/LRUCache/","2024/04/26/c++/多重指针/","2024/04/03/gdb/gdb调试/","2024/04/02/c++/直接初始化与复制初始化/","2024/04/02/c++/智能指针/","2024/04/02/c++/左右值与move/","2024/04/02/database/categories/index/","2024/04/02/c++/tuple/"];function toRandomPost(){ pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]); }</script>
