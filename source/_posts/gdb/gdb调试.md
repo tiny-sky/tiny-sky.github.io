@@ -3,7 +3,7 @@ title: gdb调试CMU15445-P3
 data: 2024-04-05
 cover: /img/blog/blog4.jpg
 categories:
-- 数据库
+- skills
 tags:
 - gdb
 - CMU-15445

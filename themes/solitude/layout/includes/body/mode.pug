@@ -2,7 +2,8 @@ case theme.display_mode.type
     when "auto"
         script.
             initTheme = () => {
-                let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+                //let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                let isDarkMode = true;
                 const cachedMode = saveToLocal.get('theme');
                 if (cachedMode === undefined) {
                     const nowMode =

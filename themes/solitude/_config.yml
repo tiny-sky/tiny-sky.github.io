@@ -566,6 +566,9 @@ keyboard:
   #   key: L
   #   url: "/links/"
 
+highlight_lang: true # show the code language
+highlight_shrink: false
+
 # 复制
 # Copy
 copy:

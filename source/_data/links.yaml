@@ -26,6 +26,13 @@ links:
         topimg: /img/links/future.png  # 如果是card模式下，将显示
         tag: 友
         color: vip
+      - name: Shawn # 友链名称
+        link: https://shawn.thisis.host/   # 友链地址
+        avatar: https://wsrv.nl/?url=github.com/ShawnJeffersonWang.png  # 显示头像
+        descr: Where there is a will, there is a way.  # 友链简介
+        topimg: https://wsrv.nl/?url=github.com/ShawnJeffersonWang.png  # 如果是card模式下，将显示
+        tag: 友
+        color: vip
   
   #- class_name: 技术
   #  descr: 技术知识为主的博客
