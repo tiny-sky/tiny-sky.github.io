@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DDIA-数据编码与演化 | tiny-sky 的个人博客</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.ico"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=1.7.5"><!-- inject head--><link rel="stylesheet" href="https://cdn2.codesign.qq.com/icons/7pOrz0WXB5ZWJPX/latest/iconfont.css"><!-- aplayer--><!-- swiper--><!-- Open Graph--><meta name="description" content="应用程序不可避免地需要随时间而变化，在演化过程中，需要不断地添加或修改功能。在大多数情况下，更改应用程序功能时，也需要更改其存储的数据: 可能需要捕获新的字段或记录类型，或者需要以新的方式呈现已有数据。 当数据格式发生变化时，经常需要对应用程序代码进行相应的调整(例如，向记录中添加新字段，然后应用程"><!-- pwa--><script>(win => {
+        win.saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay,
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        }
+
+        const DarkModeStatus = localStorage.getItem('theme')
+        if (DarkModeStatus !== null) {
+            if (DarkModeStatus === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark')
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light')
+            }
+        }
+
+        const asideStatus = saveToLocal.get('aside-status')
+        if (asideStatus !== undefined) {
+            if (asideStatus === 'hide') {
+                document.documentElement.classList.add('hide-aside')
+            } else {
+                document.documentElement.classList.remove('hide-aside')
+            }
+        }
+
+        win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+            const link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = url
+            if (id) link.id = id
+            link.onerror = reject
+            link.onload = link.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+            }
+            document.head.appendChild(link)
+        })
+
+        win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+            const script = document.createElement('script')
+            script.src = url
+            script.async = true
+            script.onerror = reject
+            script.onload = script.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+            }
+
+            Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+            })
+
+            document.head.appendChild(script)
+        })
+    }
+)(window)
+
+console.log(
+    "%c Program: Hexo %c Theme: Solitude %c Version: v1.7.5",
+    "border-radius:5px 0 0 5px;padding: 5px 10px;color:white;background:#ff3842;",
+    "padding: 5px 10px;color:white;background:#3e9f50;",
+    "border-radius:0 5px 5px 0;padding: 5px 10px;background:#0084ff;color:white;"
+);</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2024-03-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.png'
+    },
+    copyright: false,
+    highlight: {
+        enable: true,
+        limit: 200,
+        expand: true,
+        copy: true,
+        syntax: 'highlight.js'
+    },
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"f12":"开发者模式已打开，请遵循GPL协议。"},
+    aside: {
+        sayhello: {
+            morning: '一日之计在于晨',
+            noon: '吃饱了才有力气干活',
+            afternoon: '集中精力，攻克难关',
+            night: '不要太劳累了，早睡更健康',
+            goodnight: '睡个好觉，保证精力充沛',
+        },
+        sayhello2: ["🤖️ 数码科技爱好者","🔍 分享与热心帮助","🔨 设计开发一条龙","🏃 脚踏实地行动派","🧱 团队小组发动机"],
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    post_ai: false
+};</script><meta name="generator" content="Hexo 7.1.1"></head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude st-close-fill"></i></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude st-moon-clear-fill"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude st-side-bar-fill"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">16</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">6</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude st-moon-clear-fill"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/c/">c++<sup>5</sup></a><a href="/tags/database/">database<sup>9</sup></a><a href="/tags/leveldb/">leveldb<sup>6</sup></a><a href="/tags/gdb/">gdb<sup>1</sup></a><a href="/tags/CMU-15445/">CMU-15445<sup>1</sup></a><a href="/tags/Distributed-computing/">Distributed computing<sup>4</sup></a></div></div></div></div><!-- keyboard--><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude st-more-fill"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">DDIA-数据编码与演化</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);"><i class="solitude st-dashboard-fill"></i></a></div><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude st-arrow-up-line"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude st-menu-line"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/img/blog/blog15.jpg" alt="DDIA-数据编码与演化"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database/"><span class="tags-name tags-punctuation">database</span></a><a class="post-meta__tags" href="/tags/Distributed-computing/"><span class="tags-name tags-punctuation">Distributed computing</span></a></div></div></div></div><h1 class="post-title">DDIA-数据编码与演化</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2024-07-29 09:06:45"><i class="post-meta-icon solitude st-calendar-todo-fill"></i><time datetime="2024-07-29T01:06:45.922Z">2024-07-29T01:06:45.922Z</time></span><span class="post-meta-date" title="最后更新于 2024-07-30 11:29:46"><i class="post-meta-icon solitude st-refresh-line"></i><time datetime="2024-07-30T03:29:46.659Z">2024-07-30T03:29:46.659Z</time></span><a class="post-meta-pv" href="/2024/07/29/DDIA/coding/" title="文章热度"><i class="post-meta-icon solitude st-fire-fill"></i></a></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>应用程序不可避免地需要随时间而变化，在演化过程中，需要不断地添加或修改功能。在大多数情况下，更改应用程序功能时，也需要更改其存储的数据: 可能需要捕获新的字段或记录类型，或者需要以新的方式呈现已有数据。</p>
+<p>当数据格式发生变化时，经常需要对应用程序代码进行相应的调整(例如，向记录中添加新字段，然后应用程序代码开始读取和写入该字段) 。然而，对于一个大型应用系统，代码更迭往往并非易事。</p>
+<ol>
+<li>服务器端程序，可能需要滚动升级，每次将新版本部署到少数几个节点，之后再逐步推广到所有节点。</li>
+<li>对于客户端应用程序，用户可能不会在一段时间内马上更新软件</li>
+</ol>
+<p>这意为着新旧版本的代码，以及新旧数据格式，可能同时在系统中共存，所以保证数据的双向兼容性至关重要</p>
+<span id="more"></span>
+
+<h2 id="数据兼容性"><a href="#数据兼容性" class="headerlink" title="数据兼容性"></a>数据兼容性</h2><ol>
+<li>向后兼容性<br>较新的代码可以读取由旧代码编写的数据</li>
+<li>向前兼容性<br>较旧的代码可以读取新代码编写的数据</li>
+</ol>
+<p>向后兼容通常不难实现：只需要清楚旧代码所编写的数据格式，就可以比较明确的处理这些数据，对于向前兼容性，旧的代码需要忽略新版本代码中所做的添加</p>
+<p>在本文中，将介绍多种编码数据的格式，包括JSON、XML、Protocol Buffers、Thrift。特别地，我们将讨论它们如何处理模式变化，以及保证兼容性。之后，还将讨论这些格式如何用于数据存储和通信场景，包括在Web服务中，具象状态传输 (Representational State Transfer，REST) 和远程过程调用 (remote procedure calls，RPC) 以及消息传递系统，如actors和消息队列。</p>
+<h2 id="数据编码"><a href="#数据编码" class="headerlink" title="数据编码"></a>数据编码</h2><p>程序通常使用两种不同的数据表示形式:</p>
+<ol>
+<li><p>在内存中,数据保存在对象、结构体、列表、数组、哈希表和树等结构中。这些数据结构针对CPU的高效访问和操作进行了优化(通常使用指针) 。</p>
+</li>
+<li><p>将数据写和入文件或通过网络发送时，必须将其编码为某种自包含的字节序列(例如 JSON文档) 。由于指针对其他进程没有意义，所以这个字节序列表示看起来与内存中使用的数据结构大不一样。</p>
+</li>
+</ol>
+<p>因此，这两种表示之间需要进行类型的转化。从内存中的表示到字节序列的转化称为编码(或序列化等) ，相反的过程称为解码 (或解析，反序列化)。</p>
+<h3 id="语言特定的编码"><a href="#语言特定的编码" class="headerlink" title="语言特定的编码"></a>语言特定的编码</h3><p>多数编程语言，如Java、Ruby、Python等，通过内置库（例如Java的java.io.Serializable，Ruby的Marshal，Python的pickle）支持内存对象的编码。</p>
+<p>这些库使得保存和恢复内存中的对象变得非常简单，仅需少量代码。但是却面临这一些问题与挑战：</p>
+<ol>
+<li>编码与特定语言绑定：编码过程通常依赖于特定的编程语言，这使得使用其他语言访问编码数据变得困难，不利于跨语言或跨系统集成。</li>
+<li>安全风险：解码过程可能允许实例化任意类，这可能导致安全漏洞，如远程执行代码。</li>
+<li>版本兼容性问题：这些库通常忽略了数据的多版本兼容性，主要关注于数据编码的速度和简便性。</li>
+<li>效率问题：编解码的CPU效率和编码结构的大小通常被忽视，特别是Java内置序列化因其性能不佳和庞大的编码结构而被批评。</li>
+</ol>
+<p>尽管内置和第三方编码库在使用上非常方便，但由于上述问题，除非是临时尝试，语言内置的编码方案通常不是一个好方案。</p>
+<h3 id="JSON、XML与二进制变体"><a href="#JSON、XML与二进制变体" class="headerlink" title="JSON、XML与二进制变体"></a>JSON、XML与二进制变体</h3><p>目标转向可由不同编程语言编写和读取的标准化编码，<code>JSON</code> 因为简单性以及在浏览器中内置支持而流行，并且它是javaScript的子集，<code>XML</code> 尽管被批评为复杂和冗长，但仍广泛使用。<code>CSV</code> 简单但功能有限，适用于基础数据表达。</p>
+<p>JSON、XML和CSV都是文本格式，因此具有不错的可读性 (尽管语法容易引发争论) 。除了表面的语法问题之外，它们也有一些微妙的问题:</p>
+<ol>
+<li>数字编码模糊性：XML和CSV难以区分数字和字符串；JSON区分数字和字符串，但不区分整数和浮点数，也不指定精度。</li>
+<li>二进制数据不支持：JSON和XML不支持原生二进制数据，通常通过Base64编码解决，但这增加了数据大小和复杂性。</li>
+<li>模式支持：XML和JSON的模式支持可选且复杂，而CSV完全没有模式支持，需手动管理数据结构的变化。<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">XML使用XSD（XML Schema Definition）定义模式。XSD定义了XML文档的结构、元素和属性。</span><br><span class="line"></span><br><span class="line">JSON模式（JSON Schema）定义了JSON数据的结构，包括哪些字段是必须的，它们的类型是什么，以及如何验证字段的值。</span><br></pre></td></tr></table></figure></li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// json 数据</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Alice&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;age&quot;</span><span class="punctuation">:</span> <span class="number">30</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JSON模式</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;$schema&quot;</span><span class="punctuation">:</span> <span class="string">&quot;http://json-schema.org/draft-07/schema#&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;object&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;properties&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;string&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;age&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;integer&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;required&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;name&quot;</span><span class="punctuation">,</span> <span class="string">&quot;age&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>尽管存在这些或那些缺陷，但JSON、XML和CSV已经可用于很多应用。特别是作为数据交换格式 (即将数据从一个组织发送到另一个组织)。</p>
+<h3 id="二进制编码"><a href="#二进制编码" class="headerlink" title="二进制编码"></a>二进制编码</h3><p>对于一个小的数据集来说，传输、解析的收益可以忽略不计，但一旦数据规模到达TB级别，就需要尽可能的压缩数据规模。减少编码大小。</p>
+<p>对于特定的数据类型，上面的文本数据编码都不能很好的支持，所以需要一种支持不同数据类型的编码格式</p>
+<p>为了解决上述的问题，来分析不同二进制编码之间是如何处理的</p>
+<p><img src="/../../img/blogs/DDIA/%E5%9B%9B/1.png"></p>
+<p>首先给出一个 JSON 编码的示例，后文将与该编码进行比对，看看不同编码格式的差异</p>
+<h4 id="Thrift-与-Protocol-Buffers"><a href="#Thrift-与-Protocol-Buffers" class="headerlink" title="Thrift 与 Protocol Buffers"></a>Thrift 与 Protocol Buffers</h4><p><code>Apache Thrift</code> 和 <code>Protocol Buffers (protobuf)</code> 是基于相同原理的两种二进制编码库。Protocol Buffers 最初是在 Google 开发的，Thrift 最初是在 Facebook 开发的，二者都是开源的。</p>
+<p>Thrift 和 Protocol Buffers 都需要模式来编码任意的数据。可以使用Thrift接口定义语言 (IDL) 来描述模式，如下所示：</p>
+<figure class="highlight thrift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="number">1</span> : <span class="keyword">required</span> <span class="type">string</span> userName，</span><br><span class="line">    <span class="number">2</span> : <span class="keyword">optional</span> <span class="type">i64</span> favoriteNumber，</span><br><span class="line">    <span class="number">3</span> : <span class="keyword">optional</span> <span class="type">list</span>&lt;<span class="type">string</span>&gt; interests</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Protocol Buffers的等价模式定义看起来非常相似:</p>
+<figure class="highlight protobuf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">message </span><span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="keyword">required</span> <span class="type">string</span> user_name       = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">optional</span> <span class="type">int64</span> favoTrite_number = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">repeated</span> <span class="type">string</span> interests       = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这两种数据编码通过在定义模式中指定数据类型来实现对不同数据的正确编码</p>
+<p>那么这个模式编码的数据是什么样的呢？ Thrift 有着两种不同的二进制编码格式，分别称为 <code>BinaryProtocoal</code> 与 <code>CompactProtocal</code> </p>
+<p>先来看看 BinaryProtocol，这种格式编码需要59字节</p>
+<p><img src="/../../img/blogs/DDIA/%E5%9B%9B/2.png"></p>
+<p>可以发现这种编码格式没有字段名 (userName、favoriteNumber和<br>interest) 。相反，确实包含这对应的数字标签(1、2和3),字段标签就像字段的别名，用来指示当前的字段，但更为紧凑。</p>
+<p>Thrift CompactProtocol编码在语义上等同于BinaryProtocol，除了数字标签，还使用了变长数组来实现</p>
+<p><img src="/../../img/blogs/DDIA/%E5%9B%9B/3.png"></p>
+<p>最后，Protocol Buffers (只有一种二进制编码格式) 对相同的数据进行编码。它的位打包方式略有不同，但与Thrift的 CompactProtocol 非常相似</p>
+<p><img src="/../../img/blogs/DDIA/%E5%9B%9B/4.png"></p>
+<h4 id="模式演化"><a href="#模式演化" class="headerlink" title="模式演化"></a>模式演化</h4><p>之前说过，模式不可避免地需要随着时间而不断变化，称之为<code>模式演化</code>。那么 Thrift 和 Protocol Buffers 如何在保持向后和向前兼容性的同时应对模式更改呢?</p>
+<p>每个字段在模式中通过唯一的标签号（field tag）来识别，而不是字段名称，确保了数据的兼容性和一致性。</p>
+<p>向前兼容性:</p>
+<ul>
+<li>字段的添加：可以向模式中添加新字段，赋予新的标签号。如果旧代码遇到未知的标签号，它会忽略这些新字段。这是通过让解析器跳过特定的字节数来实现的，允许旧代码读取新代码写入的数据。</li>
+<li>删除字段：可以删除可选字段，这样旧代码即使读不到，也可也根据设置使用一个默认值或者简单忽略，如果是必选字段，则会因读不到值而报错</li>
+<li>更改数据类型：更改字段的数据类型是可能的，但要注意数据可能丢失精度或被截断的风险。例如，将32位整数改为64位整数时，旧代码可能无法处理新数据的完整范围。</li>
+</ul>
+<p>向后兼容性：</p>
+<ul>
+<li>字段的读取：新代码总能读取旧数据，因为每个字段的标签号意义不变。但新添加的字段不能设置为必填（required），因为这会导致新代码在读取旧数据时失败，旧数据中不包含新字段。</li>
+<li>删除字段：新代码遇到已经删除的字段，它会忽略这些新字段</li>
+<li>更改数据类型：同向前兼容性一样，肯发生丢失精度或被截断的风险</li>
+</ul>
+<h2 id="基于服务的数据流-REST和RPC"><a href="#基于服务的数据流-REST和RPC" class="headerlink" title="基于服务的数据流: REST和RPC"></a>基于服务的数据流: REST和RPC</h2><p>对于通过网络进行通信的进程，有许多种通信方式，最常见的两个角色：客户端和服务器，服务器通过网络公开API,客户端可以连接到服务器以向该 API 发出请求，服务器公开的 API 成为服务。</p>
+<p>此外，服务器本身可以是另一项服务的客户端 (例如，典型的Web应用服务器作为数据库的客户端) 。这种方法通常用于将大型应用程序按照功能区域分解为较小的服务，这样当一个服务需要另一个服务的某些功能或数据时，就会向另一个服务发出请求。称之为为微服务体系结构 (microservices architecture)。</p>
+<p>当 HTTP 被用作与服务通信的底层协议时，它被成为 Web 服务，有两种流行的Web服务方法：REST 和 SOAP</p>
+<ol>
+<li>REST(Representational State Transfer)<br>REST不是一个具体的协议，而是一种利用HTTP现有功能的架构风格。它主要依赖于HTTP标准的方法来处理数据和交互，比如GET、POST、PUT和DELETE等</li>
+</ol>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="comment"># 示例：使用GET请求获取书籍信息</span></span><br><span class="line">response = requests.get(<span class="string">&#x27;https://api.example.com/books/1&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;GET Response:&#x27;</span>, response.json())  <span class="comment"># 假设服务器返回JSON格式的数据</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 示例：使用POST请求添加一本新书</span></span><br><span class="line">book_data = &#123;</span><br><span class="line">    <span class="string">&#x27;title&#x27;</span>: <span class="string">&#x27;New Book&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;author&#x27;</span>: <span class="string">&#x27;John Doe&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;isbn&#x27;</span>: <span class="string">&#x27;1234567890&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line">post_response = requests.post(<span class="string">&#x27;https://api.example.com/books&#x27;</span>, json=book_data)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;POST Response:&#x27;</span>, post_response.json())</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>SOAP (Simple Object Access Protocol)<br>SOAP是一种协议，主要通过XML格式的消息进行通信。它不依赖于特定的传输协议，尽管通常使用HTTP，但也可以通过SMTP等其他协议传输SOAP消息。SOAP的设计更偏向于操作和服务，而不是资源。</li>
+</ol>
+<h3 id="远程过程调用-RPC"><a href="#远程过程调用-RPC" class="headerlink" title="远程过程调用(RPC)"></a>远程过程调用(RPC)</h3><p><code>RPC</code>试图让远程服务调用看起来如同本地函数调用一样简单（称为位置透明性）。然而，这种模式存在许多限制，因为网络调用与本地调用之间存在根本性差异:</p>
+<ol>
+<li>不可预测性：网络请求受到网络稳定性和远程服务器状态的影响，可能导致请求丢失或延迟。</li>
+<li>超时和不确定性：网络请求可能因超时而没有结果，与本地调用不同，网络调用的失败可能不会返回任何信息。</li>
+<li>幂等性问题：如果网络请求失败需要重试，可能会不知不觉中重复执行操作，除非协议中包括了幂等性保护机制。</li>
+<li>性能问题：网络请求的响应时间比本地函数调用慢并且更加不稳定。</li>
+<li>数据编码：网络请求需要将参数编码为字节序列，这对于大型对象来说可能成问题。</li>
+<li>跨语言数据类型转换：RPC框架需要处理不同编程语言之间的数据类型转换，这可能导致兼容性问题。</li>
+</ol>
+<p>尽管 <code>RPC </code>面临多个挑战，但是很多编码都在其基础上构建了各种RPC 框架，例如 Thrift, Avro 带有 RPC 支持 ，gRPC 是使用 Protocol Buffers 的 RPC 实现。</p>
+<p>新一代的 RPC 框架更加明确了远程请求与本地函数调用不同的事实。例如，Finagle和Rest.li使用Futures (Promises) 来封装可能失败的异步操作。gRPC支持流，其中调用不仅包括一个请求和一个响应，还包括一段时间内一系列的请求和响应。</p>
+<p>其中一些框架还提供了服务发现，即允许客户端查询在哪个IP地址和端口号上获得特定的服务。</p>
+<p>目前，REST似乎是公共 API 的主流风格。RPC框架主要侧重于同一组织内多项服务之间的请求，通常发生在同一数据中心内。</p>
+<h3 id="基于消息传递的数据流"><a href="#基于消息传递的数据流" class="headerlink" title="基于消息传递的数据流"></a>基于消息传递的数据流</h3><p>本章我们一直在研究从一个进程到另一个进程不同的数据流编码方式。到目前为止，已经讨论了 REST 和 RPC (其中一个进程通过网络向另一个进程发送请求) 以及数据库 (其中一个进程写入编码数据，另一个进程在将来某个时刻再次读取该数据) 。</p>
+<p>之后我们将简要介绍一下RPC和数据库之间的异步消息传递系统。它们与 <code>RPC</code> 的相似之处在于，客户端的请求 (通常称为消息) 以低延迟传递到另一个进程。它们与数据库的相似之处在于，不是通过直接的网络连接发送销息，而是通过称为消息代理 (也称为消息队列，或面向消息的中间件) 的中介发送的，该中介会暂存消息。</p>
+<p>与直接RPC相比，使用消息代理有以下几个优点:</p>
+<ol>
+<li>如果接收方不可用或过载，它可以充当缓冲区，从而提高系统的可靠性。</li>
+<li>它可以自动将消息重新发送到崩溃的进程，从而防止消息丢失。</li>
+<li>它避免了发送方需要知道接收方的IP地址和端口号 (这在虚拟机经常容易起起停停的云部署中特别有用) 。</li>
+<li>它支持将一条永息发送给多个接收方。</li>
+<li>它在逻辑上将发送方与接收方分离 (发送方只是发布消息，并不关心谁使用它们) 。</li>
+</ol>
+<p>然而，与RPC的差异在于，消息传递通信通常是单向的: 发送方通常不期望收到对其消息的回复。进程可能发送一个响应，但这通常是在一个独立的通道上完成的。这种通信模式是异步的: 发送者不会等待消息被传递，而只是发送然后忘记它。</p>
+<h3 id="消息代理"><a href="#消息代理" class="headerlink" title="消息代理"></a>消息代理</h3><p>消息代理是一种中间件，用于在不同进程、应用程序或系统之间传递消息。进程通过消息代理将消息发送到队列或主题，消息代理负责确保这些消息可靠地传递给一个或多个目标消费者或订阅者。</p>
+<p>传统上由商业软件如TIBCO、IBM WebSphere和WebMethods控制的消息代理市场，近年来已经看到了像RabbitMQ、ActiveMQ、HornetQ、NATS和Apache Kafka等开源软件的兴起。</p>
+<ol>
+<li><p>消息传递模型：消息代理支持单向数据流，其中消费者可以接收消息并可能将其发布到另一个主题或发送到回复队列，支持类似RPC的请求&#x2F;响应模式。</p>
+</li>
+<li><p>数据模型的灵活性：消息代理通常不强制使用任何特定的数据模型，而是处理任意编码格式的字节序列。这样的设计允许在不同发布者和消费者间实现高度的灵活性和独立部署。</p>
+</li>
+<li><p>数据的向后与向前兼容性：为了保持系统组件之间的兼容性和灵活性，建议使用向后与向前兼容的编码格式。如果消费者重新发布消息到另一个主题，需要注意保留消息中的未知字段，以避免数据丢失。</p>
+</li>
+</ol>
+<h3 id="分布式-Actor-模型"><a href="#分布式-Actor-模型" class="headerlink" title="分布式 Actor 模型"></a>分布式 Actor 模型</h3><p><code>Actor模型</code> 是一种用于并发编程的方法，它通过封装逻辑在独立的单元（Actor）中来避免传统多线程编程中常见的问题，如竞争条件、锁定和死锁。</p>
+<ol>
+<li>在Actor模型中，每个Actor是一个并发单元，持有自己的状态，不与其他Actor共享。</li>
+<li>Actor之间通过异步消息进行通信。这种通信方式不保证消息一定被送达，可能因为错误而丢失。</li>
+<li>每个Actor一次只处理一条消息，由框架独立调度，因此不需要考虑线程同步问题。</li>
+</ol>
+<p><code>分布式Actor框架</code> 将Actor模型扩展到多个节点，可以跨多个物理或虚拟机环境运行。</p>
+<ol>
+<li>消息传递：无论Actor位于同一节点还是不同节点，消息传递机制保持一致。如果是跨节点，消息会被编码成字节序列，通过网络发送，并在接收端解码。</li>
+<li>位置透明性：分布式Actor模型提供了位置透明性，即开发者不需要关心Actor实际运行的物理位置。由于模型本身预期可能会有消息丢失，因此比RPC在处理网络问题上更为鲁棒。</li>
+<li>版本兼容性：在分布式环境中，如果节点间版本不一致，仍需考虑消息的向前和向后兼容性，特别是在进行滚动升级时。</li>
+</ol>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本章，我们研究了将内存数据结构转换为网络或磁盘上字节流的多种方法。我们看到这些编码的细节不仅影响其效率，更重要的是还影响应用程序的体系结构</p>
+<p>特别地，许多服务需要支持滚动升级，即每次将新版本的服务逐步部署到几个节点，而不是同时部署到所有节点。滚动升级允许在不停机的情况下发布新版本的服务 (因此鼓励频繁地发布小版本而不是大版本) ，并降低部署风险 (允许错误版本在影响大量用户之前检测并回滚) 。这些特性非常有利于应用程序的演化和更改。</p>
+<p>在滚动升级期间，或者由于各种其他原因，必须假设不同的节点正在运行应用代码的不同版本。因此，在系统内流动的所有数据都需提供向后兼容性(新代码可以读取旧数据) 和向前兼容性 (旧代码可以读取新数据) 。</p>
+<p>本章还讨论了多种数据编码格式及其兼容性情况:</p>
+<ol>
+<li>编程语言特定的编码仅限于某一种编程语言，往往无法提供向前和向后兼容性。</li>
+<li>JSON、XMIL和CSV等文本格式非常普遍，其兼容性取决于你如何使用他们。它们有可选的模式语言，必须小心处理数字和二进制字符串等问题。</li>
+<li>像Thrift、Protocol Buffers和Avro这样的二进制的模式驱动格式，支持使用清晰定义的向前和向后兼容性语义进行紧凑、高效的编码。这些模式对于静态类型语言中的文档和代码生成非常有用。然而，它们有一个缺点，即只有在数据解码后才是人类可读的。</li>
+</ol>
+<p>我们还讨论了数据流的几种模型，说明了数据编码在不同场景下非常重要:</p>
+<ol>
+<li>数据库，写入数据库的进程对数据进行编码，而读取数据库的进程对数据进行解码。</li>
+<li>RPC 和REST API，其中客户端对请求进行编码，服务器对请求进行解码并对响应进行编码，客户端最终对响应进行解码。</li>
+<li>异步消息传递 (使用消息代理或Actor) ，节点之间通过互相发送消息进行通信，消息由发送者编码并由接收者解码。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><a class="post-copyright__author_img" href="/about/"><img class="post-copyright__author_img_front" src="/img/pwa/favicon.ico"></a><div class="post-copyright__author_name">tiny-sky 的个人博客</div><div class="post-copyright__author_desc">人生苦短，及时行乐</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">tiny-sky 的个人博客</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/database/"><span class="tags-punctuation"></span>database<span class="tagsPageCount">9</span></a><a class="post-meta__tags" href="/tags/Distributed-computing/"><span class="tags-punctuation"></span>Distributed computing<span class="tagsPageCount">4</span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/07/27/DDIA/storage/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DDIA-数据存储与检索</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="author-info__top-group"><div class="author-info__sayhi" id="author-info__sayhi" onclick="sco.changeSayHelloText()">sayhello.morning</div></div></div><div class="avatar-img-group"><img class="avatar-img" alt="头像" src="/img/tiny-sky.png"><div class="avatar-sticker"><img class="avatar-sticker-img" src="https://7.isyangs.cn/34/65f2e4e0423cc-34.png" alt="心情贴纸"></div></div><div class="author-info__description_group"><div class="author-info__description">分享自己对编程的<b>热爱</b>，对美好生活的<b>向往</b>。</div><div class="author-info__description2">相信你可以在这里找到对你有用的知识和教程。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/about/"><div class="author-info__name">tiny-sky</div><div class="author-info__desc">人生苦短，及时行乐</div></a><div class="card-info-social-icons is-center"><a class="social-icon" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><a class="social-icon" href="tiny-sky:goto.age@gmail.com" title="Mail"><i class="solitude  st-mail-line"></i></a></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude st-menu-line"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%85%BC%E5%AE%B9%E6%80%A7"><span class="toc-text">数据兼容性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BC%96%E7%A0%81"><span class="toc-text">数据编码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%AD%E8%A8%80%E7%89%B9%E5%AE%9A%E7%9A%84%E7%BC%96%E7%A0%81"><span class="toc-text">语言特定的编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JSON%E3%80%81XML%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%8F%98%E4%BD%93"><span class="toc-text">JSON、XML与二进制变体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%BC%96%E7%A0%81"><span class="toc-text">二进制编码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Thrift-%E4%B8%8E-Protocol-Buffers"><span class="toc-text">Thrift 与 Protocol Buffers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%BC%8F%E6%BC%94%E5%8C%96"><span class="toc-text">模式演化</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%95%B0%E6%8D%AE%E6%B5%81-REST%E5%92%8CRPC"><span class="toc-text">基于服务的数据流: REST和RPC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E8%BF%87%E7%A8%8B%E8%B0%83%E7%94%A8-RPC"><span class="toc-text">远程过程调用(RPC)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92%E7%9A%84%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-text">基于消息传递的数据流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%BB%A3%E7%90%86"><span class="toc-text">消息代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F-Actor-%E6%A8%A1%E5%9E%8B"><span class="toc-text">分布式 Actor 模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude st-map-line"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/07/29/DDIA/coding/" title="DDIA-数据编码与演化"><img alt="DDIA-数据编码与演化" src="/img/blog/blog15.jpg"></a><div class="content"><a class="title" href="/2024/07/29/DDIA/coding/" title="DDIA-数据编码与演化">DDIA-数据编码与演化</a><a class="article-recent_post_categories" href="/2024/07/29/DDIA/coding/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/27/DDIA/storage/" title="DDIA-数据存储与检索"><img alt="DDIA-数据存储与检索" src="/img/blog/blog14.jpg"></a><div class="content"><a class="title" href="/2024/07/27/DDIA/storage/" title="DDIA-数据存储与检索">DDIA-数据存储与检索</a><a class="article-recent_post_categories" href="/2024/07/27/DDIA/storage/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/26/DDIA/Model/" title="DDIA-数据模型与查询语言"><img alt="DDIA-数据模型与查询语言" src="/img/blog/blog13.jpg"></a><div class="content"><a class="title" href="/2024/07/26/DDIA/Model/" title="DDIA-数据模型与查询语言">DDIA-数据模型与查询语言</a><a class="article-recent_post_categories" href="/2024/07/26/DDIA/Model/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/26/DDIA/base/" title="DDIA-数据应用系统"><img alt="DDIA-数据应用系统" src="/img/blog/blog12.jpg"></a><div class="content"><a class="title" href="/2024/07/26/DDIA/base/" title="DDIA-数据应用系统">DDIA-数据应用系统</a><a class="article-recent_post_categories" href="/2024/07/26/DDIA/base/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/20/database/Compaction/" title="LevelDB 源码分析(五) - Compaction"><img alt="LevelDB 源码分析(五) - Compaction" src="/img/blog/blog11.jpg"></a><div class="content"><a class="title" href="/2024/06/20/database/Compaction/" title="LevelDB 源码分析(五) - Compaction">LevelDB 源码分析(五) - Compaction</a><a class="article-recent_post_categories" href="/2024/06/20/database/Compaction/">database</a></div></div></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span class="solitude">Solitude</span></div><div class="footer-bar-description">来自tiny-sky 的个人博客 - 人生苦短，及时行乐的文章</div><a class="footer-bar-link" href="/">了解更多</a></div><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/img/pwa/favicon.ico" alt="返回顶部"></div><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/xiyou-linuxer" title="GithubGroup"><i class="solitude  st-github-line"></i></a></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="归档">归档</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div><div class="footer-group"><h3 class="footer-title">服务</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://aliyun.com/" title="阿里云">阿里云</a><a class="footer-item" target="_blank" rel="noopener" href="https://summer-ospp.ac.cn/" title="OSPP">OSPP</a><a class="footer-item" target="_blank" rel="noopener" href="https://summerofcode.withgoogle.com/" title="GSOC">GSOC</a></div></div><div class="footer-group"><h3 class="footer-title">收藏</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://csdiy.wiki/" title="CSDIY">CSDIY</a><a class="footer-item" target="_blank" rel="noopener" href="https://xiaolincoding.com/" title="小林Coding">小林Coding</a><a class="footer-item" target="_blank" rel="noopener" href="https://subingwen.cn/" title="爱编程的大丙">爱编程的大丙</a></div></div><div class="footer-group"><h3 class="footer-title">网站</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://leetcode.cn/" title="LeetCode">LeetCode</a><a class="footer-item" target="_blank" rel="noopener" href="https://chat.openai.com/" title="ChatGPT">ChatGPT</a></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2024 By&nbsp;<a class="footer-bar-link" href="/">tiny-sky</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="主题">主题</a><a class="footer-bar-link cc" href="/null" aria-label="copyright"><i class="solitude st-copyright-line"></i><i class="solitude st-creative-commons-by-line"></i><i class="solitude st-creative-commons-nc-line"></i><i class="solitude st-creative-commons-nd-line"></i></a></div></div></div></footer></div><!-- inject body--><div><script src="/js/main.js?v=1.7.5"></script><script src="/js/utils.js?v=1.7.5"></script><script src="/js/third_party/universe.min.js?v=1.7.5"></script><script>dark()
+</script><script src="https://cdn.staticfile.net/pjax/0.2.8/pjax.min.js"></script><script src="https://cdn.staticfile.net/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdn.staticfile.net/pace/1.2.4/pace.min.js"></script></div><div id="js-pjax"><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: 'post',
+    toc: true,
+    comment: false,
+}
+</script></div><!-- newest comment--><!-- pjax--><script>let pjaxSelectors = [
+    'title',
+    '#body-wrap',
+    '#site-config',
+    'meta[name="description"]',
+    '#js-pjax',
+    'meta[property^="og:"]',
+]
+
+const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- theme--><script>initTheme = () => {
+    //let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let isDarkMode = true;
+    const cachedMode = saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+}
+initTheme()</script><!-- google adsense--><!-- search--><!-- music--></body></html><script>const posts=["2024/07/29/DDIA/coding/","2024/07/27/DDIA/storage/","2024/07/26/DDIA/Model/","2024/07/26/DDIA/base/","2024/06/20/database/Compaction/","2024/06/19/database/Compaction-file/","2024/06/12/database/TableBuilder/","2024/05/01/skills/Hash/","2024/05/01/database/BloomFilter/","2024/04/29/database/LRUCache/","2024/04/26/c++/多重指针/","2024/04/03/gdb/gdb调试/","2024/04/02/c++/直接初始化与复制初始化/","2024/04/02/c++/智能指针/","2024/04/02/c++/左右值与move/","2024/04/02/c++/tuple/"];function toRandomPost(){ pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]); }</script>
