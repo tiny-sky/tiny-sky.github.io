@@ -6,7 +6,7 @@ categories:
 - 大数据
 tags:
 - database
-- Distributed computing
+- big data
 ---
 
 ## 背景
