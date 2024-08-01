@@ -5,7 +5,7 @@ cover: /img/blog/blog14.jpg
 categories:
 - 大数据
 tags:
-- database
+- DDIA
 - big data
 ---
 
