@@ -1,0 +1,326 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DDIA-数据复制 | tiny-sky 的个人博客</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.ico"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=1.7.5"><!-- inject head--><link rel="stylesheet" href="https://cdn2.codesign.qq.com/icons/7pOrz0WXB5ZWJPX/latest/iconfont.css"><!-- aplayer--><!-- swiper--><!-- Open Graph--><meta name="description" content="就DDIA-分布式数据系统一文所提到的，出于高可用的目的，我们往往需要将数据复制到其他副本节点来提高容错。这里的复制主要指的是通过互联网在多台机器上保存相同的副本，并且可以带来如下好处： 使数据在地理位置上更接近用户，从而降低访问延迟。 当部分组件出现故障，系统依然可以继续工作，从而提高可用性。"><!-- pwa--><script>(win => {
+        win.saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay,
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        }
+
+        const DarkModeStatus = localStorage.getItem('theme')
+        if (DarkModeStatus !== null) {
+            if (DarkModeStatus === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark')
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light')
+            }
+        }
+
+        const asideStatus = saveToLocal.get('aside-status')
+        if (asideStatus !== undefined) {
+            if (asideStatus === 'hide') {
+                document.documentElement.classList.add('hide-aside')
+            } else {
+                document.documentElement.classList.remove('hide-aside')
+            }
+        }
+
+        win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+            const link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = url
+            if (id) link.id = id
+            link.onerror = reject
+            link.onload = link.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+            }
+            document.head.appendChild(link)
+        })
+
+        win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+            const script = document.createElement('script')
+            script.src = url
+            script.async = true
+            script.onerror = reject
+            script.onload = script.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+            }
+
+            Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+            })
+
+            document.head.appendChild(script)
+        })
+    }
+)(window)
+
+console.log(
+    "%c Program: Hexo %c Theme: Solitude %c Version: v1.7.5",
+    "border-radius:5px 0 0 5px;padding: 5px 10px;color:white;background:#ff3842;",
+    "padding: 5px 10px;color:white;background:#3e9f50;",
+    "border-radius:0 5px 5px 0;padding: 5px 10px;background:#0084ff;color:white;"
+);</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2024-03-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.png'
+    },
+    copyright: false,
+    highlight: {
+        enable: true,
+        limit: 200,
+        expand: true,
+        copy: true,
+        syntax: 'highlight.js'
+    },
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"f12":"开发者模式已打开，请遵循GPL协议。"},
+    aside: {
+        sayhello: {
+            morning: '一日之计在于晨',
+            noon: '吃饱了才有力气干活',
+            afternoon: '集中精力，攻克难关',
+            night: '不要太劳累了，早睡更健康',
+            goodnight: '睡个好觉，保证精力充沛',
+        },
+        sayhello2: ["🤖️ 数码科技爱好者","🔍 分享与热心帮助","🔨 设计开发一条龙","🏃 脚踏实地行动派","🧱 团队小组发动机"],
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    post_ai: false
+};</script><meta name="generator" content="Hexo 7.1.1"></head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude st-close-fill"></i></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude st-moon-clear-fill"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude st-side-bar-fill"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">18</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">8</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude st-moon-clear-fill"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/c/">c++<sup>5</sup></a><a href="/tags/database/">database<sup>5</sup></a><a href="/tags/leveldb/">leveldb<sup>6</sup></a><a href="/tags/gdb/">gdb<sup>1</sup></a><a href="/tags/CMU-15445/">CMU-15445<sup>1</sup></a><a href="/tags/Distributed-computing/">Distributed computing<sup>2</sup></a><a href="/tags/big-data/">big data<sup>4</sup></a><a href="/tags/DDIA/">DDIA<sup>6</sup></a></div></div></div></div><!-- keyboard--><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude st-more-fill"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">DDIA-数据复制</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);"><i class="solitude st-dashboard-fill"></i></a></div><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude st-arrow-up-line"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude st-menu-line"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/img/blog/blog17.jpg" alt="DDIA-数据复制"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Distributed-computing/"><span class="tags-name tags-punctuation">Distributed computing</span></a><a class="post-meta__tags" href="/tags/DDIA/"><span class="tags-name tags-punctuation">DDIA</span></a></div></div></div></div><h1 class="post-title">DDIA-数据复制</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2024-07-31 09:59:22"><i class="post-meta-icon solitude st-calendar-todo-fill"></i><time datetime="2024-07-31T01:59:22.378Z">2024-07-31T01:59:22.378Z</time></span><span class="post-meta-date" title="最后更新于 2024-08-01 11:07:38"><i class="post-meta-icon solitude st-refresh-line"></i><time datetime="2024-08-01T03:07:38.986Z">2024-08-01T03:07:38.986Z</time></span><a class="post-meta-pv" href="/2024/07/31/DDIA/copy/" title="文章热度"><i class="post-meta-icon solitude st-fire-fill"></i></a></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>就<a href="./distribut.md">DDIA-分布式数据系统</a>一文所提到的，出于高可用的目的，我们往往需要将数据复制到其他副本节点来提高容错。这里的复制主要指的是通过互联网在多台机器上保存相同的副本，并且可以带来如下好处：</p>
+<ol>
+<li>使数据在地理位置上更接近用户，从而降低访问延迟。</li>
+<li>当部分组件出现故障，系统依然可以继续工作，从而提高可用性。</li>
+<li>扩展至多台机器以同时提供数据访问服务，从而提高读吞吐量。</li>
+</ol>
+<p>在分布式系统中，复制并不像单机系统中几字节的移动那么简单，由于网络的不稳定，单机节点的故障，很有可能带来整个分布式系统的不一致或者不可用。</p>
+<p>接下来我们将探讨三种流行的复制数据方式：主从复制、多主复制和无主复制，对于每一种复制方式，可能也需要考虑是同步复制还是异步复制，如何处理失败副本等。</p>
+<span id="more"></span>
+
+<h2 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h2><p>每个保存数据库完整数据集的节点称之为副本。那么在分布式系统中如何保证数据的一致性呢？</p>
+<p>对于每一笔数据写入，所有副本都需要随之更新;否则，某些副本将出现不一致。最常见的解决方案是基于主节点的复制(也称为主动&#x2F;被动，或主从复制),主从复制的工作原理如下:</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/1.png"></p>
+<ol>
+<li><p>指定某一个副本为主副本 (或称为主节点) 。当客户写数据库时，必须将写请求首先发送给主副本，主副本首先将新数据写入本地存储。</p>
+</li>
+<li><p>其他副本则全部称为从副本 (或称为从节点) 。主副本把新数据写入本地存储后，然后将数据更改作为复制的日志或更改流发送给所有从副本。每个从副本获得更改日志之后将其应用到本地，且严格保持与主副本相同的写和顺序。</p>
+</li>
+<li><p>客户端从数据库中读数据时，可以在主副本或者从副本上执行查询。再次强调，只有主副本才可以接受写请求，从客户端的角度来看，从副本都是只读的。</p>
+</li>
+</ol>
+<h3 id="同步复制与异步复制"><a href="#同步复制与异步复制" class="headerlink" title="同步复制与异步复制"></a>同步复制与异步复制</h3><p>现在有一个情景：网站用户需要更新首页的头像图片。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/2.png"></p>
+<p>基于主从复制，首先，客户将更新请求发送给主节点，主节点接收到请求，之后将数据更新转发给从节点。最后，由主节点来通知客户更新完成。</p>
+<p>在该示例中，从节点1是同步复制，因为主节点需要等到节点1的完成才会向用户报告完成，在这种模式下，如果用户读节点1,那么最新的更新是可见的。</p>
+<p>对于从节点2是异步复制的，因为主节点不需要等待节点2完成写入，消息发送出去之后就之间返回了， 所以这种模式下，如果用户去读节点2,有可能会造成明明更新了数据，但是却依然是旧数据</p>
+<p>既然异步复制可能会导致读到旧数据的现象出现，那直接使用同步复制不就好了吗？但是一个分布式系统中有成千上万个节点，如果由于网络不稳定，或者少量节点崩溃，那么写入就不能成功，主节点会堵塞之后的所以写操作，直至所有副本确定写入，这样保证了系统的一致性，但是却降低了可用性。</p>
+<p>如果数据库启用了同步复制，通常意味着其中某一个从节点是同步的，而其他节点则是异步模式。万一同步的从节点变得不可用或性能下降，则将另一个异步的从节点提升为同步模式。这样可以保证<br>至少有两个节点 (即主节点和一个同步从节点) 拥有最新的数据副本。这种配置有时也称为半同步。</p>
+<h3 id="节点故障"><a href="#节点故障" class="headerlink" title="节点故障"></a>节点故障</h3><h4 id="从节点恢复"><a href="#从节点恢复" class="headerlink" title="从节点恢复"></a>从节点恢复</h4><p>当从节点因为本地故障或网络中断后重启，恢复过程较为直接。从节点在本地磁盘上保存的数据变更日志能够帮助确定故障发生前的最后一笔事务。从节点可以利用这些日志，重新连接到主节点并同步故障期间所有的数据变更，通过这种方式“追赶”主节点的最新状态。</p>
+<h4 id="主节点恢复"><a href="#主节点恢复" class="headerlink" title="主节点恢复"></a>主节点恢复</h4><p>主节点的失效处理更为复杂，关键步骤包括确认主节点失效、选举新的主节点，以及重新配置系统以使新主节点生效。</p>
+<ol>
+<li>确认主节点失效。有很多种出错可能性，例如由于系统崩溃，停电，网络问题等。大多数系统都采用了基于超时的机制: 节点间频繁地互相发生发送心跳存活消息来确认存活。</li>
+<li>选举新的主节点。可以通过选举的方式 (超过多数的节点达成共识) 来选举新的主节点，各种节点之间需要达到一致性共识。</li>
+<li>重新配置系统合新主节点生效。客户端现在需要将写请求发送给新的主节点，如果原主节点之后重新上线，可能仍然自认为是主节点。这时系统要将其降级为从节点。</li>
+</ol>
+<p>然而，在上述过程中依然存在很多的变数：</p>
+<ol>
+<li><p>数据一致性和写冲突<br>在异步复制场景中，如果主节点失效后，新提升的主节点未完全同步原主节点的数据，当原主节点快速恢复并重新加入集群时，可能导致数据冲突。新的主节点可能接收到与原主节点不一致的写请求，因为原主节点可能没有意识到已不再是主节点，继续尝试同步其他从节点。这种情况下，解决策略通常涉及放弃原主节点上未完成的写操作，但这可能违背数据持久性的承诺。</p>
+</li>
+<li><p>脑裂（Split-Brain）问题<br>脑裂是指两个节点同时认为自己是主节点的情况，这可能导致两个节点都接受写请求，而没有有效的冲突解决机制。这种情况下，数据可能会丢失或损坏。有些系统为了解决这一问题可能采取措施强制关闭其中一个节点，但如果设计或实现不当，可能导致两个节点都被关闭，进一步加剧问题。</p>
+</li>
+<li><p>主节点失效检测和超时设置<br>如何合理设置超时以检测主节点的失效是另一个挑战。超时设置过长，会延长系统的总体恢复时间；设置过短，则可能因为偶发的负载峰值、响应时间延长或网络延迟等因素导致不必要的节点切换。在高负载或网络拥塞的情况下，频繁的错误切换可能导致系统状态更加混乱。</p>
+</li>
+</ol>
+<p>对于上述的问题，包括节点失效、网络不可靠、副本一致性、持久性、可用性与延迟之间的权衡，正是分布式系统核心的基本问题，之后的1文章中，我们将进一步讨论。</p>
+<h3 id="复制日志的实现"><a href="#复制日志的实现" class="headerlink" title="复制日志的实现"></a>复制日志的实现</h3><h4 id="基于语句的复制"><a href="#基于语句的复制" class="headerlink" title="基于语句的复制"></a>基于语句的复制</h4><p>这种复制技术涉及将每个写请求（如INSERT、UPDATE、DELETE语句）直接转发给从节点进行执行。尽管这种方法初看简单，但在某些情况下不适用：</p>
+<ul>
+<li>使用非确定性函数（如NOW()或RAND()）的语句可能在不同副本上产生不同结果。</li>
+<li>自增列或依赖特定数据库状态的语句要求所有副本以相同顺序执行。</li>
+<li>含有副作用（如触发器或存储过程）的语句可能在各副本上产生不同效果。</li>
+</ul>
+<p>为解决这些问题，主节点可以在记录操作时用确定的结果替换非确定性函数的值。但由于存在许多边界条件，通常选择其他复制方案。</p>
+<h4 id="基于预写日志-WAL-的复制"><a href="#基于预写日志-WAL-的复制" class="headerlink" title="基于预写日志(WAL)的复制"></a>基于预写日志(WAL)的复制</h4><p>WAL复制涉及将写操作追加到日志中，然后通过网络将日志传输给从节点，从节点据此构建与主节点完全相同的数据副本。这种方式的复制与存储引擎紧密耦合，依赖于具体的存储格式，可能导致在不同版本的数据库软件间存在兼容性问题。</p>
+<h4 id="基于行的逻辑日志复制"><a href="#基于行的逻辑日志复制" class="headerlink" title="基于行的逻辑日志复制"></a>基于行的逻辑日志复制</h4><p>这种复制技术使用逻辑日志来描述行级别的数据变化，独立于存储引擎的物理数据表示。逻辑日志提供足够信息来标识和处理行的插入、删除和更新。这种方式易于与存储引擎逻辑解耦，增强了向后兼容性，并允许主从节点运行不同版本的软件。</p>
+<p>WAL 记录具体的物理页变化，即具体哪些磁盘块被修改了，修改内容是什么。关注的是数据的物理层面(为方便于展示，简单的示例)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">LSN: 12345</span><br><span class="line">Transaction ID: TX123</span><br><span class="line">Page ID: Page 5</span><br><span class="line">Offset: 135</span><br><span class="line">Old Value: &#x27;abc&#x27;</span><br><span class="line">New Value: &#x27;def&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>逻辑日志记录高级的操作，而不是物理数据页的变化。如插入、删除和更新命令，包括操作涉及的表、行以及具体的列值。(为方便于展示，简单的示例)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Transaction ID: TX124</span><br><span class="line">Operation: UPDATE</span><br><span class="line">Table: Orders</span><br><span class="line">Row Key: OrderID 1023</span><br><span class="line">Changed Columns: Status</span><br><span class="line">Old Value: &#x27;Pending&#x27;</span><br><span class="line">New Value: &#x27;Completed&#x27;</span><br></pre></td></tr></table></figure>
+
+<h4 id="基于触发器的复制"><a href="#基于触发器的复制" class="headerlink" title="基于触发器的复制"></a>基于触发器的复制</h4><p>这是一种更灵活的复制方法，涉及注册应用层代码以在数据变更时执行。这可以用于特定的数据同步场景，如部分数据复制或跨不同数据库类型的复制。尽管这种方法可能带来更高的开销和更多的错误风险，但其灵活性在某些应用场景中非常有价值。</p>
+<h3 id="复制滞后问题"><a href="#复制滞后问题" class="headerlink" title="复制滞后问题"></a>复制滞后问题</h3><h4 id="读自己写"><a href="#读自己写" class="headerlink" title="读自己写"></a>读自己写</h4><p>应用中用户提交数据后，尝试读取时可能因为异步复制导致数据尚未同步到从节点，造成看似数据丢失的情况。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/3.png"></p>
+<p>解决方案要求用户在提交数据后能立即看到自己的更新，这称为“写后读一致性”。</p>
+<p>实现方法：</p>
+<ol>
+<li>主从节点读取策略：如果用户访问的是可能被自己修改的数据，应从主节点读取；如果访问的是不太可能修改的数据，则从从节点读取。</li>
+<li>时间戳和版本跟踪：通过在读取请求中包含更新的时间戳或版本信息，系统可以判断是否提供足够新的数据，如果数据不新，则需要等待或重定向至其他副本。</li>
+<li>复制延迟监控：监控从节点的复制进度，避免从滞后太多的从节点读取数据。</li>
+</ol>
+<h4 id="单调读"><a href="#单调读" class="headerlink" title="单调读"></a>单调读</h4><p>在异步复制系统中，如果用户从不同副本读取数据，可能会遇到数据回滚的现象。这意味着用户可能先看到了最新的数据，然后再次刷新时看到了旧数据，造成混淆和不一致的用户体验。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/4.png"></p>
+<p>单调读一致性是介于强一致性和最终一致性之间的一种数据一致性保证。它确保用户在连续读取操作中不会看到数据回滚现象，即用户不会在读取到较新的数据之后再看到旧数据。</p>
+<p>实现方式：</p>
+<ol>
+<li>通过确保每个用户总是从固定的、同一副本读取数据来实现单调读一致性。这可以通过基于用户ID的哈希方法来选择副本，而非随机选择，从而减少从不同副本获取数据的不一致性。</li>
+<li>如果固定的副本发生故障，需要有策略将用户的读请求重新路由到其他副本，同时保持一致性保证。</li>
+</ol>
+<h4 id="前缀一致读"><a href="#前缀一致读" class="headerlink" title="前缀一致读"></a>前缀一致读</h4><p>在分布式系统中，因复制滞后而导致的数据更新顺序问题可能引起逻辑上的因果反常，如对话顺序颠倒的现象。这是分区数据库中的一个特殊现象，因为在众多分布式数据库中，不同的分区独立运行，因此不存在全局写入顺序，所以会看到顺序紊乱现象</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/5.png"></p>
+<p>前缀一致读保证在读取数据时，数据的展示顺序与其被写入的顺序相同，从而维护因果关系的一致性。</p>
+<p>解决方案：</p>
+<ol>
+<li>对于包含因果关系的数据操作，尽量保持在同一分区内处理，以减少因分区独立操作导致的顺序问题。</li>
+<li>使用Happened-before关系的算法来显式地跟踪事件顺序，增强系统的一致性。</li>
+</ol>
+<h2 id="多主节点复制"><a href="#多主节点复制" class="headerlink" title="多主节点复制"></a>多主节点复制</h2><p>多主节点复制（也称为主-主或主动&#x2F;主动复制）允许多个主节点接受写操作，并将数据更改转发到所有其他节点。每个主节点同时扮演其他主节点的从节点角色。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/6.png"></p>
+<p>适用场景：</p>
+<ol>
+<li>多数据中心：多主节点复制在跨多数据中心的环境中特别有用，可以在每个数据中心配置主节点，优化写入延迟，提高系统容错性和性能。</li>
+<li>离线客户端操作：如移动设备的应用程序，在离线状态下进行的更改稍后可与服务器和其他设备同步。</li>
+</ol>
+<p>优势：</p>
+<ol>
+<li>性能：每个数据中心的写操作可以本地快速响应，通过异步复制同步到其他数据中心，减少网络延迟影响</li>
+<li>容灾：每个数据中心可以独立运行，故障的数据中心恢复后可更新到最新状态，提高系统的整体可用性。</li>
+<li>网络容忍性：异步复制可以更好地容忍网络问题，如临时的网络闪断。</li>
+</ol>
+<p>挑战：</p>
+<ol>
+<li>写冲突：不同数据中心可能同时修改相同的数据，必须解决潜在的写冲突问题。</li>
+<li>系统复杂性：多主复制可能引入配置复杂性，与数据库的其他功能（如自增主键、触发器等）交互时可能出现意外的副作用。</li>
+</ol>
+<p>所以对于多主节点复制，最核心的问题就是面临的写冲突</p>
+<h3 id="处理写冲突"><a href="#处理写冲突" class="headerlink" title="处理写冲突"></a>处理写冲突</h3><p>例如，两个用户同时编辑wiki页面，用户1将页面的标题从A更改为<br>B，与此同时用户2却将标题从A改为C。每个用户的更改都顺利地提交到本地主节点。 但是，当更改被异步复制到对方时，却发现存在冲突后。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/7.png"></p>
+<p>处理冲突的最理想的方式是避免发送冲突，如果引用层可以保证对特定记录的写请求总是通过一个主节点，那么就不会发生冲突，但是如果该数据中心发生故障，不得已将流量重新路由到新的数据中心，那么必须采用对应的措施来避免写入冲突</p>
+<p>在主从复制模型中，数据更新遵循顺序性原则，即后来的写操作确定最终值。然而多主节点复制模型由于没有固定的写入顺序，最终的数据值可能不确定，所以需要通过收敛于一致状态的机制来解决冲突</p>
+<p>收敛于一致状态解决机制：</p>
+<ol>
+<li>最后写入者获胜：基于时间戳或其他唯一标识，选择最后的写入作为有效更新。</li>
+<li>唯一副本ID优先：基于副本的序号，高序号副本的写入优先。(这种方式也会导致数据丢失)</li>
+<li>合并：将冲突的值按某种规则合并。</li>
+<li>记录和保留冲突信息：利用应用层逻辑在后期解决冲突，如用户提示解决冲突。</li>
+</ol>
+<h2 id="无主节点复制"><a href="#无主节点复制" class="headerlink" title="无主节点复制"></a>无主节点复制</h2><p>到目前为止本章所讨论的复制方法，包括单主节点和多主节点复制，都是基于这样一种核心思路 : 即客户端先向某个节点(主节点) 发送写请求，然后数据库系统负责将写请求复制到其他副本。由主节点决定写操作的顺序，从节点按照相同的顺序来应用主节点所发送的写日志。</p>
+<p>一些数据存储系统则采用了不同的设计思路: 选择放弃主节点，允许任何副本直接接受来自客户端的写请求。</p>
+<p>早期的数据复制系统采用无主节点模式，也称为去中心化或无中心复制。在无主节点系统中，客户端可以直接向任何副本发送写请求，无需经过主节点。某些系统中存在协调者节点负责写操作的协调，但不维护写入顺序。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/8.png"></p>
+<p>用户1234将写请求并行发送到三个副本，有两个可用副本接受写请求，而不可用的副本无法处理该写请求。如果假定三个副本中有两个成功确认写操作，用户1234收到两个确认的回复之后，即可认为写入成功。客户完全可以忽略其中一个副本无法写入的情况。</p>
+<h3 id="读写-quorum"><a href="#读写-quorum" class="headerlink" title="读写 quorum"></a>读写 quorum</h3><p>通过这个例子，三个副本中如果有两个以上完成处理，则认为写入成功，那么以此类推，究竟多少个副本完成才可以认为写入成功？</p>
+<p>我们知道，成功的写操作要求三个副本中至少两个完成，这意味着至多有一个副本可能包含旧值。因此，在读取时需要至少向两个副本发起读请求，这样至少有一个节点包含新值。如果第三个副本出现停机或响应缓慢，则读取仍可以继续并返回最新值。</p>
+<p>把上述道理推广到一般情况，如果有n个副本，写入需要w个节点确认，读取必须至少查询r个节点，则只要 <code>w + r &gt; m</code>，读取的节点中一定会包含最新值。例如在前面的例子中 n &#x3D; 3，w &#x3D; 2，r &#x3D; 2。满足上述这些 r 、w 值的读&#x2F;写操作称之为法定票数读 (仲裁读) 或法定票数写 (仲裁写)。</p>
+<p><img src="/../../img/blogs/DDIA/%E4%BA%94/9.png"></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本章，我们详细探讨了复制相关的话题。复制或者多副本技术主要服务于以下目的:</p>
+<ol>
+<li>高可用性: 即使某台机器(或多台机器，或整个数据中心) 出现故障，系统也能保持正常运行。</li>
+<li>连接断开与容错: 允许应用程序在出现网络中断时继续工作。</li>
+<li>低延迟: 将数据放置在距离用户较近的地方，从而实现更快地交互。</li>
+<li>可扩展性: 采用多副本读取，大幅提高系统读操作的吞吐量。</li>
+</ol>
+<p>我们主要讨论了三种多副本方案:</p>
+<ol>
+<li>主从复制<br>所有的客户端写入操作都发送到某一个节点(主节点) ，由该节点负责将数据更改事件发送到其他副本(从节点) 。每个副本都可以接收读请求，但内容可能是过期值。</li>
+<li>多主节点复制<br>系统存在多个主节点，每个都可以接收写请求，客户端将写请求发送到其中的一个主节点上，由该主节点负责将数据更改事件同步到其他主节点和自己的从节点。</li>
+<li>无主节点复制<br>客户端将写请求发送到多个节点上，读取时从多个节点上并行读取，以此检测和纠正某些过期数据。</li>
+</ol>
+<p>每种方法都有其优点和缺点。主从复制非常流行，主要是因为它很容易理解，也不需要担心冲突问题。而万一出现节点失效、网络中断或者延迟抖动等情况，多主节点和无主节点复制方案会更加可靠，不过背后的代价则是系统的复杂性和弱一致性保证。</p>
+<p>复制可以是同步的，也可以是异步的，而一旦发生故障，二者的表现差异会对系统行为产生深远的影响。在系统稳定状态下异步复制性能优秀，但仍需考虑一旦出现复制滞后和节点失效两种场景会导致何种影响。</p>
+<p>我们还分析了由于复制滞后所引起的一些奇怪效应，并讨论了以下一致性模型，来帮助应用程序处理复制滞后：</p>
+<ol>
+<li>写后读一致性<br>保证用户总能看到自己所提交的最新数据。</li>
+<li>单调读<br>用户在某个时间点读到数据之后，保证此后不会出现比该时间点更早的数据。</li>
+<li>前缀一致读<br>保证数据之间的因果关系，例如，总是以正确的顺序先读取问题 ，然后看到回答</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><a class="post-copyright__author_img" href="/about/"><img class="post-copyright__author_img_front" src="/img/pwa/favicon.ico"></a><div class="post-copyright__author_name">tiny-sky 的个人博客</div><div class="post-copyright__author_desc">人生苦短，及时行乐</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">tiny-sky 的个人博客</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Distributed-computing/"><span class="tags-punctuation"></span>Distributed computing<span class="tagsPageCount">2</span></a><a class="post-meta__tags" href="/tags/DDIA/"><span class="tags-punctuation"></span>DDIA<span class="tagsPageCount">6</span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/07/31/DDIA/distribut/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DDIA-分布式数据系统</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="author-info__top-group"><div class="author-info__sayhi" id="author-info__sayhi" onclick="sco.changeSayHelloText()">sayhello.morning</div></div></div><div class="avatar-img-group"><img class="avatar-img" alt="头像" src="/img/tiny-sky.png"><div class="avatar-sticker"><img class="avatar-sticker-img" src="https://7.isyangs.cn/34/65f2e4e0423cc-34.png" alt="心情贴纸"></div></div><div class="author-info__description_group"><div class="author-info__description">分享自己对编程的<b>热爱</b>，对美好生活的<b>向往</b>。</div><div class="author-info__description2">相信你可以在这里找到对你有用的知识和教程。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/about/"><div class="author-info__name">tiny-sky</div><div class="author-info__desc">人生苦短，及时行乐</div></a><div class="card-info-social-icons is-center"><a class="social-icon" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><a class="social-icon" href="tiny-sky:goto.age@gmail.com" title="Mail"><i class="solitude  st-mail-line"></i></a></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude st-menu-line"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="toc-text">主从复制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%A4%8D%E5%88%B6%E4%B8%8E%E5%BC%82%E6%AD%A5%E5%A4%8D%E5%88%B6"><span class="toc-text">同步复制与异步复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E6%95%85%E9%9A%9C"><span class="toc-text">节点故障</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%8E%E8%8A%82%E7%82%B9%E6%81%A2%E5%A4%8D"><span class="toc-text">从节点恢复</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E8%8A%82%E7%82%B9%E6%81%A2%E5%A4%8D"><span class="toc-text">主节点恢复</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E6%97%A5%E5%BF%97%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">复制日志的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E8%AF%AD%E5%8F%A5%E7%9A%84%E5%A4%8D%E5%88%B6"><span class="toc-text">基于语句的复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E9%A2%84%E5%86%99%E6%97%A5%E5%BF%97-WAL-%E7%9A%84%E5%A4%8D%E5%88%B6"><span class="toc-text">基于预写日志(WAL)的复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E8%A1%8C%E7%9A%84%E9%80%BB%E8%BE%91%E6%97%A5%E5%BF%97%E5%A4%8D%E5%88%B6"><span class="toc-text">基于行的逻辑日志复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E8%A7%A6%E5%8F%91%E5%99%A8%E7%9A%84%E5%A4%8D%E5%88%B6"><span class="toc-text">基于触发器的复制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E6%BB%9E%E5%90%8E%E9%97%AE%E9%A2%98"><span class="toc-text">复制滞后问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB%E8%87%AA%E5%B7%B1%E5%86%99"><span class="toc-text">读自己写</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E8%B0%83%E8%AF%BB"><span class="toc-text">单调读</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%89%8D%E7%BC%80%E4%B8%80%E8%87%B4%E8%AF%BB"><span class="toc-text">前缀一致读</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E4%B8%BB%E8%8A%82%E7%82%B9%E5%A4%8D%E5%88%B6"><span class="toc-text">多主节点复制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E5%86%99%E5%86%B2%E7%AA%81"><span class="toc-text">处理写冲突</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E4%B8%BB%E8%8A%82%E7%82%B9%E5%A4%8D%E5%88%B6"><span class="toc-text">无主节点复制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%86%99-quorum"><span class="toc-text">读写 quorum</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude st-map-line"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/07/31/DDIA/copy/" title="DDIA-数据复制"><img alt="DDIA-数据复制" src="/img/blog/blog17.jpg"></a><div class="content"><a class="title" href="/2024/07/31/DDIA/copy/" title="DDIA-数据复制">DDIA-数据复制</a><a class="article-recent_post_categories" href="/2024/07/31/DDIA/copy/">分布式</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/31/DDIA/distribut/" title="DDIA-分布式数据系统"><img alt="DDIA-分布式数据系统" src="/img/blog/blog16.jpg"></a><div class="content"><a class="title" href="/2024/07/31/DDIA/distribut/" title="DDIA-分布式数据系统">DDIA-分布式数据系统</a><a class="article-recent_post_categories" href="/2024/07/31/DDIA/distribut/">分布式</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/29/DDIA/coding/" title="DDIA-数据编码与演化"><img alt="DDIA-数据编码与演化" src="/img/blog/blog15.jpg"></a><div class="content"><a class="title" href="/2024/07/29/DDIA/coding/" title="DDIA-数据编码与演化">DDIA-数据编码与演化</a><a class="article-recent_post_categories" href="/2024/07/29/DDIA/coding/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/27/DDIA/storage/" title="DDIA-数据存储与检索"><img alt="DDIA-数据存储与检索" src="/img/blog/blog14.jpg"></a><div class="content"><a class="title" href="/2024/07/27/DDIA/storage/" title="DDIA-数据存储与检索">DDIA-数据存储与检索</a><a class="article-recent_post_categories" href="/2024/07/27/DDIA/storage/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/26/DDIA/Model/" title="DDIA-数据模型与查询语言"><img alt="DDIA-数据模型与查询语言" src="/img/blog/blog13.jpg"></a><div class="content"><a class="title" href="/2024/07/26/DDIA/Model/" title="DDIA-数据模型与查询语言">DDIA-数据模型与查询语言</a><a class="article-recent_post_categories" href="/2024/07/26/DDIA/Model/">大数据</a></div></div></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span class="solitude">Solitude</span></div><div class="footer-bar-description">来自tiny-sky 的个人博客 - 人生苦短，及时行乐的文章</div><a class="footer-bar-link" href="/">了解更多</a></div><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/img/pwa/favicon.ico" alt="返回顶部"></div><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/xiyou-linuxer" title="GithubGroup"><i class="solitude  st-github-line"></i></a></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="归档">归档</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div><div class="footer-group"><h3 class="footer-title">服务</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://aliyun.com/" title="阿里云">阿里云</a><a class="footer-item" target="_blank" rel="noopener" href="https://summer-ospp.ac.cn/" title="OSPP">OSPP</a><a class="footer-item" target="_blank" rel="noopener" href="https://summerofcode.withgoogle.com/" title="GSOC">GSOC</a></div></div><div class="footer-group"><h3 class="footer-title">收藏</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://csdiy.wiki/" title="CSDIY">CSDIY</a><a class="footer-item" target="_blank" rel="noopener" href="https://xiaolincoding.com/" title="小林Coding">小林Coding</a><a class="footer-item" target="_blank" rel="noopener" href="https://subingwen.cn/" title="爱编程的大丙">爱编程的大丙</a></div></div><div class="footer-group"><h3 class="footer-title">网站</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://leetcode.cn/" title="LeetCode">LeetCode</a><a class="footer-item" target="_blank" rel="noopener" href="https://chat.openai.com/" title="ChatGPT">ChatGPT</a></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2024 By&nbsp;<a class="footer-bar-link" href="/">tiny-sky</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="主题">主题</a><a class="footer-bar-link cc" href="/null" aria-label="copyright"><i class="solitude st-copyright-line"></i><i class="solitude st-creative-commons-by-line"></i><i class="solitude st-creative-commons-nc-line"></i><i class="solitude st-creative-commons-nd-line"></i></a></div></div></div></footer></div><!-- inject body--><div><script src="/js/main.js?v=1.7.5"></script><script src="/js/utils.js?v=1.7.5"></script><script src="/js/third_party/universe.min.js?v=1.7.5"></script><script>dark()
+</script><script src="https://cdn.staticfile.net/pjax/0.2.8/pjax.min.js"></script><script src="https://cdn.staticfile.net/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdn.staticfile.net/pace/1.2.4/pace.min.js"></script></div><div id="js-pjax"><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: 'post',
+    toc: true,
+    comment: false,
+}
+</script></div><!-- newest comment--><!-- pjax--><script>let pjaxSelectors = [
+    'title',
+    '#body-wrap',
+    '#site-config',
+    'meta[name="description"]',
+    '#js-pjax',
+    'meta[property^="og:"]',
+]
+
+const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- theme--><script>initTheme = () => {
+    //let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let isDarkMode = true;
+    const cachedMode = saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+}
+initTheme()</script><!-- google adsense--><!-- search--><!-- music--></body></html><script>const posts=["2024/07/31/DDIA/copy/","2024/07/31/DDIA/distribut/","2024/07/29/DDIA/coding/","2024/07/27/DDIA/storage/","2024/07/26/DDIA/Model/","2024/07/26/DDIA/base/","2024/06/20/database/Compaction/","2024/06/19/database/Compaction-file/","2024/06/12/database/TableBuilder/","2024/05/01/skills/Hash/","2024/05/01/database/BloomFilter/","2024/04/29/database/LRUCache/","2024/04/26/c++/多重指针/","2024/04/03/gdb/gdb调试/","2024/04/02/c++/直接初始化与复制初始化/","2024/04/02/c++/智能指针/","2024/04/02/c++/左右值与move/","2024/04/02/c++/tuple/"];function toRandomPost(){ pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]); }</script>
