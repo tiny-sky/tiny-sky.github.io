@@ -6,7 +6,7 @@ categories:
 - 分布式
 tags:
 - DDIA
-- Distributed computing
+- Distributed
 ---
 
 前面几篇文章主要讨论了单台机器存储系统设计的主要技术。后面我们将继续向前迈进，当需要多台机器提供数据存储和检索服务时，又会有哪些挑战和方案呢?

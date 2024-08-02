@@ -6,7 +6,7 @@ categories:
 - 分布式
 tags:
 - DDIA
-- Distributed computing
+- Distributed
 ---
 
 就[DDIA-分布式数据系统](./distribut.md)一文所提到的，出于高可用的目的，我们往往需要将数据复制到其他副本节点来提高容错。这里的复制主要指的是通过互联网在多台机器上保存相同的副本，并且可以带来如下好处：
