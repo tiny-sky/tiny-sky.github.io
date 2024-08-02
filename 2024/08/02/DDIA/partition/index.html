@@ -1,0 +1,258 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DDIA-数据分区 | tiny-sky 的个人博客</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/img/pwa/favicon.ico"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=1.7.5"><!-- inject head--><link rel="stylesheet" href="https://cdn2.codesign.qq.com/icons/7pOrz0WXB5ZWJPX/latest/iconfont.css"><!-- aplayer--><!-- swiper--><!-- Open Graph--><meta name="description" content="当面对一些海量数据集或非常高的查询压力时，我们可以通过 数据复制复制，即在不同节点上保存相同数据的多个副本，然而有时还是不够，我们还需要将数据拆分为分区，也成为分片。 采用数据分区的主要目的是提高可扩展性。不同的分区可以放在一个无共享集群的不同节点上。这样一个大数据集可以分散在更多的磁盘上，查询负载"><!-- pwa--><script>(win => {
+        win.saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay,
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        }
+
+        const DarkModeStatus = localStorage.getItem('theme')
+        if (DarkModeStatus !== null) {
+            if (DarkModeStatus === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark')
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light')
+            }
+        }
+
+        const asideStatus = saveToLocal.get('aside-status')
+        if (asideStatus !== undefined) {
+            if (asideStatus === 'hide') {
+                document.documentElement.classList.add('hide-aside')
+            } else {
+                document.documentElement.classList.remove('hide-aside')
+            }
+        }
+
+        win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+            const link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = url
+            if (id) link.id = id
+            link.onerror = reject
+            link.onload = link.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+            }
+            document.head.appendChild(link)
+        })
+
+        win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+            const script = document.createElement('script')
+            script.src = url
+            script.async = true
+            script.onerror = reject
+            script.onload = script.onreadystatechange = function () {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+            }
+
+            Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+            })
+
+            document.head.appendChild(script)
+        })
+    }
+)(window)
+
+console.log(
+    "%c Program: Hexo %c Theme: Solitude %c Version: v1.7.5",
+    "border-radius:5px 0 0 5px;padding: 5px 10px;color:white;background:#ff3842;",
+    "padding: 5px 10px;color:white;background:#3e9f50;",
+    "border-radius:0 5px 5px 0;padding: 5px 10px;background:#0084ff;color:white;"
+);</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2024-03-20 00:00:00',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.png'
+    },
+    copyright: false,
+    highlight: {
+        enable: true,
+        limit: 200,
+        expand: true,
+        copy: true,
+        syntax: 'highlight.js'
+    },
+    randomlink: false,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"f12":"开发者模式已打开，请遵循GPL协议。"},
+    aside: {
+        sayhello: {
+            morning: '一日之计在于晨',
+            noon: '吃饱了才有力气干活',
+            afternoon: '集中精力，攻克难关',
+            night: '不要太劳累了，早睡更健康',
+            goodnight: '睡个好觉，保证精力充沛',
+        },
+        sayhello2: ["🤖️ 数码科技爱好者","🔍 分享与热心帮助","🔨 设计开发一条龙","🏃 脚踏实地行动派","🧱 团队小组发动机"],
+    },
+    covercolor: {
+        enable: false
+    },
+    comment: false,
+    lightbox: 'null',
+    post_ai: false
+};</script><meta name="generator" content="Hexo 7.1.1"></head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude st-close-fill"></i></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude st-moon-clear-fill"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude st-side-bar-fill"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">19</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">9</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude st-moon-clear-fill"></i><span>显示模式</span></span></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-widget card-tags card-archives card-webinfo card-allinfo"><div class="card-tag-cloud"><a href="/tags/c/">c++<sup>5</sup></a><a href="/tags/database/">database<sup>5</sup></a><a href="/tags/leveldb/">leveldb<sup>6</sup></a><a href="/tags/gdb/">gdb<sup>1</sup></a><a href="/tags/CMU-15445/">CMU-15445<sup>1</sup></a><a href="/tags/Distributed-computing/">Distributed computing<sup>0</sup></a><a href="/tags/big-data/">big data<sup>4</sup></a><a href="/tags/DDIA/">DDIA<sup>7</sup></a><a href="/tags/Distributed/">Distributed<sup>3</sup></a></div></div></div></div><!-- keyboard--><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><div class="back-home-button" tabindex="-1"><i class="back-home-button-icon solitude st-more-fill"></i><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="Solitude"><img class="nolazyload back-menu-item-icon" src="/img/pwa/favicon.ico" alt="Solitude"><span class="back-menu-item-text">Solitude</span></a></div></div></div></div><a id="site-name" href="/" title="返回博客主页"><span class="title">Solitude</span></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">DDIA-数据分区</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span>首页</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>文库</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  st-folder-fill"></i><span>文章列表</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  st-checkbox-multiple-blank-fill"></i><span>全部分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  st-price-tag-fill"></i><span>全部标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>友链</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/links/"><i class="solitude  st-group-fill"></i><span>友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>我的(开发中)</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/equipment/"><i class="solitude  st-laptop-line"></i><span>装备</span></a></li><li><a class="site-page child" href="/tlink/"><i class="solitude  st-tools-fill"></i><span>工具箱</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span>关于</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  st-contacts-fill"></i><span>关于本站</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);"><i class="solitude st-dashboard-fill"></i></a></div><div class="nav-button" id="nav-totop" onclick="sco.toTop()"><a class="totopbtn"><i class="solitude st-arrow-up-line"></i><span id="percent">0</span></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude st-menu-line"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/img/blog/blog18.jpg" alt="DDIA-数据分区"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/DDIA/"><span class="tags-name tags-punctuation">DDIA</span></a><a class="post-meta__tags" href="/tags/Distributed/"><span class="tags-name tags-punctuation">Distributed</span></a></div></div></div></div><h1 class="post-title">DDIA-数据分区</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2024-08-02 16:24:31"><i class="post-meta-icon solitude st-calendar-todo-fill"></i><time datetime="2024-08-02T08:24:31.643Z">2024-08-02T08:24:31.643Z</time></span><span class="post-meta-date" title="最后更新于 2024-08-02 20:05:55"><i class="post-meta-icon solitude st-refresh-line"></i><time datetime="2024-08-02T12:05:55.832Z">2024-08-02T12:05:55.832Z</time></span><a class="post-meta-pv" href="/2024/08/02/DDIA/partition/" title="文章热度"><i class="post-meta-icon solitude st-fire-fill"></i></a></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>当面对一些海量数据集或非常高的查询压力时，我们可以通过 <a href="./copy.md">数据复制复制</a>，即在不同节点上保存相同数据的多个副本，然而有时还是不够，我们还需要将数据拆分为分区，也成为分片。</p>
+<p>采用数据分区的主要目的是提高可扩展性。不同的分区可以放在一个无共享集群的不同节点上。这样一个大数据集可以分散在更多的磁盘上，查询负载也随之分布到更多的处理器上。</p>
+<p>对单个分区进行查询时，每个节点对自己所在分区可以独立执行查询操作，因此添加更多的节点可以提高查询吞吐量。超大而复杂的查询尽管比较困难，但也可能做到跨节点的并行处理。</p>
+<span id="more"></span>
+
+<h2 id="数据分区与数据复制"><a href="#数据分区与数据复制" class="headerlink" title="数据分区与数据复制"></a>数据分区与数据复制</h2><p>分区通常与复制结合使用，即每个分区在多个节点都存有副本。这意味着某条记录属于特定的分区，而同样的内容会保存在不同的节点上以提高系统的容错性。</p>
+<p><img src="/../../img/blogs/DDIA/%E5%85%AD/1.png"></p>
+<p>既然是切分，那么首要的目的是如何切分数据，即如何决定那些记录应该放在哪些节点上？</p>
+<p>分区的首要目标是将数据和查询负载均匀的分布在所有节点上，因为如果分区不均匀，出现某些分区节点比其他分区承担更多的数据量与负载。这意味着10个节点9个空闲，那么最繁忙的那个将会成为系统的瓶颈。</p>
+<p>如果随机平均分配在所有节点上，那么当读取特定数据时，便没法知道数据保存在哪一种节点上，这样不得不并行查询所有节点。</p>
+<p>接下来我们将通过几种常见的方式来对数据进行分区：</p>
+<h2 id="键值分区"><a href="#键值分区" class="headerlink" title="键值分区"></a>键值分区</h2><h3 id="基于关键字区间分区"><a href="#基于关键字区间分区" class="headerlink" title="基于关键字区间分区"></a>基于关键字区间分区</h3><p>这种方式通过为每个分区分配一个关键字区间（通常由最小值和最大值界定）来组织数据，类似于图书馆中的百科全书卷目录。通过知道关键字的区间，可以直接定位到包含这些关键字的分区，进而向相应的节点发出请求。</p>
+<p><img src="/../../img/blogs/DDIA/%E5%85%AD/2.png"></p>
+<p>此外，关键字的区间不必均匀分布，因为数据本身可能分布不均。例如，有的卷可能包含以多个字母开头的单词，而有的卷则只包含以一两个字母开头的单词。为了更均匀地分布数据，可以根据数据的实际分布来调整分区边界。这种分区策略可以手动设置，也可以由数据库系统自动选择。</p>
+<p>每个分区内的数据可以按关键字排序存储，以支持区间查询，这对于需要执行时间范围查询的应用尤其有用。</p>
+<p>然而，基于关键字的区间分区缺点是某些访问模式会导致热点，例如基于时间戳的分区，因为所有写入操作可能集中在当前的时间分区上。导致该分区写入时负载过高。为了避免这一问题，可以将时间戳以外的元素（如传感器名称）作为关键字的首部，以此实现负载的均匀分布。</p>
+<h3 id="基于关键字哈希值分区"><a href="#基于关键字哈希值分区" class="headerlink" title="基于关键字哈希值分区"></a>基于关键字哈希值分区</h3><p>基于关键字哈希值的数据分区方法也是一种常见的方式，选用适当的哈希函数，如32位处理字符串的哈希函数，可以使得即使输入的字符串非常相似，其返回的哈希值也能在一个预定范围内（如0到2^32-1）近似随机地分布，从而有效处理数据倾斜并实现数据的均匀分布。</p>
+<p>在数据分区中，不是直接按关键字的字面范围来分区，而是将数据根据关键字的哈希值划分到不同的分区。例如，可以为每个分区分配一个哈希值范围，关键字则根据其哈希值落入相应的分区。</p>
+<p><img src="/../../img/blogs/DDIA/%E5%85%AD/3.png"></p>
+<p>然而，基于哈希的分区策略虽然可以有效避免热点并均匀分布数据，但它对于区间查询的支持较差。关键字经过哈希处理后可能被分配到多个不同的分区，使得连续的关键字不再物理上相邻，这导致区间查询变得复杂和低效。</p>
+<p>尽管一致性哈希在理论上是平衡负载的良好方法，但在数据库应用中的实际效果并不总是理想的，导致某些数据库系统采用了修改或不完全遵循一致性哈希的策略。如Cassandra，它允许表的复合主键中第一部分用于哈希分区，而其余部分则用于排序，从而允许在固定第一列的情况下对其他列进行高效的区间查询。这种策略为数据提供了既均匀分布又支持有效查询的平衡方式。</p>
+<h2 id="二级索引分区"><a href="#二级索引分区" class="headerlink" title="二级索引分区"></a>二级索引分区</h2><p>上述两种方案依赖于键-值数据模型，都是通过关键字来访问数据，通过关键字来确定分区，并将读写请求路由到该关键字的分区上。</p>
+<p>但二级索引并不能唯一标识记录，一个索引可能对应多个值，那么情况就会复杂很多，有两种主要的方式来支持对二级索引进行分区：基于文档的分区和基于词条的分区</p>
+<h3 id="基于文档分区的二级索引"><a href="#基于文档分区的二级索引" class="headerlink" title="基于文档分区的二级索引"></a>基于文档分区的二级索引</h3><p>假设一个销售二手车的网站。每个列表都有一个唯一的文档ID ，用此ID对数据库进行分区，例如，ID 0到499归分区0，ID 500到999划为分区1。</p>
+<p>现在用户需要搜索汽车，可以按汽车颜色和厂商进行过滤，所以需要在颜色和制造商上设定二级索引 (在文档数据库中这些都是字段，在关系数据库中则是列) 。声明这些索引之后，数据库会自动创建索引。例如，每当一辆红色汽车添加到数据库中，数据库分区会自动将其添加到索引条目为 “color:red” 的文档ID列表中。</p>
+<p><img src="/../../img/blogs/DDIA/%E5%85%AD/4.png"></p>
+<p>每个分区独立维护自己的索引并只处理自己分区内的文档。这种索引被称为本地索引。然而，在执行查询时，特定的属性如颜色或品牌可能跨越多个分区，例如搜索红色汽车可能需要查询所有分区并合并结果。这种方法虽然实现简单，但查询代价较高，可能导致读延迟增加。</p>
+<h3 id="基于词条的二级索引分区"><a href="#基于词条的二级索引分区" class="headerlink" title="基于词条的二级索引分区"></a>基于词条的二级索引分区</h3><p>另一种方法，我们可以对所有的数据构建全局索引，而不是每个分区维护自己的本地索引。而且，为避免成为瓶颈，不能将全局索引存储在一个节点上，否则就破坏了设计分区均衡的目标。所以，全局索引也必须进行分区，且可以与数据关键字采用不同的分区策略。</p>
+<p><img src="/../../img/blogs/DDIA/%E5%85%AD/5.png"></p>
+<p>全局索引的一个主要优点是读取效率高。不需要对所有分区执行查询，客户端只需向包含特定词条的分区发出读请求。</p>
+<p>然而，全局索引的写入操作复杂且速度较慢，特别是当单个文档更新涉及多个二级索引时，因为这些索引分区可能位于不同的节点上，这导致写放大现象。此外，全局索引更新通常是异步的，这意味着在写入后立即读取索引可能不会看到最新的更新。</p>
+<h2 id="分区再平衡"><a href="#分区再平衡" class="headerlink" title="分区再平衡"></a>分区再平衡</h2><p>随着时间的推移，数据库可能总会出现某些变化:</p>
+<ol>
+<li>查询压力增加，因此需要更多的CPU来处理负载。</li>
+<li>数据规模增加，因此需要更多的磁盘和内存来存储数据。</li>
+<li>节点可能出现故障，因此需要其他机器来接管失效的节点。</li>
+</ol>
+<p>所有这些变化都要求数据和请求可以从一个节点转移到另一个节点。这样一个迁移负载的过程称为再平衡 (或者动态平衡) 。无论对于哪种分区方案，分区再平衡通常至少要满足:</p>
+<ol>
+<li>平衡之后，负载、数据存储、读写请求等应该在集群范围更均匀地分布。</li>
+<li>再平衡执行过程中，数据库应该可以继续正常提供读写服务。</li>
+<li>避免不必要的负载迁移，以加快动态再平衡，并尽量减少网络和磁盘I1O影响。</li>
+</ol>
+<h3 id="固定数量的分区"><a href="#固定数量的分区" class="headerlink" title="固定数量的分区"></a>固定数量的分区</h3><p>能否使用模运算 (mod) 来将哈希值分配给节点？答案是不行的，使用mod的问题在于，节点数的变动会导致大量关键字需要迁移，增加再平衡的成本。</p>
+<p>为了减少这种成本，可以使用固定数量的分区，创建远超节点数的分区，然后将分区均匀分配给各个节点。这种方法可以在增加或减少节点时，通过重新分配部分分区来实现再平衡，而不需要改变关键字到分区的映射关系，从而减少了数据迁移的复杂度和成本。</p>
+<p><img src="/../../img/blogs/DDIA/%E5%85%AD/6.png"></p>
+<h3 id="动态分区"><a href="#动态分区" class="headerlink" title="动态分区"></a>动态分区</h3><p>如果数据集的总规模高度不确定，此时如何确定分区的上限就变得很困难，很有可能造成空间的浪费或者空间的不足</p>
+<p>动态分区的策略在分区数据量超过设定阈值时自动拆分分区，并在数据量减少到某一阈值以下时与相邻分区合并。当分区的数据增长超过一个可配的参数阈值时，它就拆分为两个分区，每个承担一半的数据量。相反，如果大量数据被删除，并且分区缩小到某个阈值以下，则将其与相邻分区进行合并。(该过程类似于B树的分裂操作)</p>
+<h3 id="按节点比例分区"><a href="#按节点比例分区" class="headerlink" title="按节点比例分区"></a>按节点比例分区</h3><p>将分区数与节点数挂钩，使得每个节点维持固定数量的分区，从而当节点数增加时，可以通过分裂现有分区来适应。</p>
+<h2 id="请求路由"><a href="#请求路由" class="headerlink" title="请求路由"></a>请求路由</h2><p>通过上述的方式，数据集分布到多个节点上，但是当客户端需要发送请求时，如何知道应该连接到哪一个节点？如果发生了分区再平衡，分区与节点的对应关系还会发生变化？这其实属于一类典型的服务发现问题</p>
+<p>概况来讲，有以下几种不同的处理策略：</p>
+<ol>
+<li><p>任意节点连接：客户端可以连接到任何节点。如果连接的节点拥有请求的分区，则直接处理请求；如果没有，请求将被转发到正确的节点。</p>
+</li>
+<li><p>集中路由层：所有客户端的请求首先发送到一个路由层，这个层次不处理请求，只负责将请求根据分区信息转发到正确的节点。</p>
+</li>
+<li><p>客户端分区感知：客户端直接了解分区与节点的映射关系，可以直接连接到数据所在的节点，无需中介。</p>
+</li>
+</ol>
+<p><img src="/../../img/blogs/DDIA/%E5%85%AD/7.png"></p>
+<p>许多分布式数据系统依靠独立的协调服务 (如ZooKeeper) 跟踪集群范围内的元数据，每个节点都向ZooKeeper中注册自己，ZooKeeper维护了分区到节点的最终映射关系。其他参与者(如路由层或分区感知的客户端) 可以向ZooKeeper订阅此信息。一旦分区发生了改变，或者添加、删除节点，ZooKeeper就会主动通知路由层，这样使路由信息保持最新状态。</p>
+<p><img src="/../../img/blogs/DDIA/%E5%85%AD/8.png"></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本章，我们探讨了将大规模数据集划分成更小子集的多种方法。数据量如果太大，单台机器进行存储和处理就会成为瓶颈，因此需要引入数据分区机制。分区的目地是通过多台机器均匀分布数据和查询负载，避免出现热点。</p>
+<p>我们讨论了两种主要的分区方法:</p>
+<ol>
+<li><p>基于关键字区间的分区。先对关键字进行排序，每个分区只负责一段包含最小到最大关键字范围的一段关键字。对关键字排序的优点是可以支持高效的区间查询，但是如果应用程序经常访问与排序一致的基段关键字，就会存在热点的风险。采用这种方法，当分区太大时，通常将其分裂为两个子区间，从而动态地再平衡分区。</p>
+</li>
+<li><p>哈希分区。将哈希函数作用于每个关键字，每个分区负责一定范围的哈希值。这种方法打破了原关键字的顺序关系，它的区间查询效率比较低，但可以更均匀地分配负载。采用哈希分区时，通常事先创建好足够多 (但固定数量) 的分区，让每个节点承担多个分区，当添加或删除节点时将某些分区从一个节点迁移到另一个节点，也可以支持动态分区。</p>
+</li>
+</ol>
+<p>混合上述两种基本方法也是可行的，例如使用复合键: 键的一部分来标识分区 ，而另一部分来记录排序后的顺序。</p>
+<p>我们还讨论了分区与二级索引，二级索引也需要进行分区，有两种方法:</p>
+<ol>
+<li><p>基于文档来分区二级索引 (本地索引) 。二级索引存储在与关键字相同的分区中，这意味着写入时我们只需要更新一个分区，但缺点是读取二级索引时需要在所有分区上执行scatter&#x2F;gather。</p>
+</li>
+<li><p>基于词条来分区二级索引 (全局索引) 。它是基于索引的值而进行的独立分区。二级索引中的条目可能包含来自关键字的多个分区里的记录。在写入时，不得不更新二级索引的多个分区， 但读取时，则可以从单个分区直接快速提取数据。</p>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><a class="post-copyright__author_img" href="/about/"><img class="post-copyright__author_img_front" src="/img/pwa/favicon.ico"></a><div class="post-copyright__author_name">tiny-sky 的个人博客</div><div class="post-copyright__author_desc">人生苦短，及时行乐</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">tiny-sky 的个人博客</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/DDIA/"><span class="tags-punctuation"></span>DDIA<span class="tagsPageCount">7</span></a><a class="post-meta__tags" href="/tags/Distributed/"><span class="tags-punctuation"></span>Distributed<span class="tagsPageCount">3</span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/07/31/DDIA/copy/"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DDIA-数据复制</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><div class="author-info__top-group"><div class="author-info__sayhi" id="author-info__sayhi" onclick="sco.changeSayHelloText()">sayhello.morning</div></div></div><div class="avatar-img-group"><img class="avatar-img" alt="头像" src="/img/tiny-sky.png"><div class="avatar-sticker"><img class="avatar-sticker-img" src="https://7.isyangs.cn/34/65f2e4e0423cc-34.png" alt="心情贴纸"></div></div><div class="author-info__description_group"><div class="author-info__description">分享自己对编程的<b>热爱</b>，对美好生活的<b>向往</b>。</div><div class="author-info__description2">相信你可以在这里找到对你有用的知识和教程。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/about/"><div class="author-info__name">tiny-sky</div><div class="author-info__desc">人生苦短，及时行乐</div></a><div class="card-info-social-icons is-center"><a class="social-icon" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><a class="social-icon" href="tiny-sky:goto.age@gmail.com" title="Mail"><i class="solitude  st-mail-line"></i></a></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude st-menu-line"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E5%8C%BA%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6"><span class="toc-text">数据分区与数据复制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%88%86%E5%8C%BA"><span class="toc-text">键值分区</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E5%85%B3%E9%94%AE%E5%AD%97%E5%8C%BA%E9%97%B4%E5%88%86%E5%8C%BA"><span class="toc-text">基于关键字区间分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E5%85%B3%E9%94%AE%E5%AD%97%E5%93%88%E5%B8%8C%E5%80%BC%E5%88%86%E5%8C%BA"><span class="toc-text">基于关键字哈希值分区</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E5%88%86%E5%8C%BA"><span class="toc-text">二级索引分区</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E6%96%87%E6%A1%A3%E5%88%86%E5%8C%BA%E7%9A%84%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95"><span class="toc-text">基于文档分区的二级索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E8%AF%8D%E6%9D%A1%E7%9A%84%E4%BA%8C%E7%BA%A7%E7%B4%A2%E5%BC%95%E5%88%86%E5%8C%BA"><span class="toc-text">基于词条的二级索引分区</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%8C%BA%E5%86%8D%E5%B9%B3%E8%A1%A1"><span class="toc-text">分区再平衡</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BA%E5%AE%9A%E6%95%B0%E9%87%8F%E7%9A%84%E5%88%86%E5%8C%BA"><span class="toc-text">固定数量的分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%88%86%E5%8C%BA"><span class="toc-text">动态分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%89%E8%8A%82%E7%82%B9%E6%AF%94%E4%BE%8B%E5%88%86%E5%8C%BA"><span class="toc-text">按节点比例分区</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E8%B7%AF%E7%94%B1"><span class="toc-text">请求路由</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude st-map-line"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/08/02/DDIA/partition/" title="DDIA-数据分区"><img alt="DDIA-数据分区" src="/img/blog/blog18.jpg"></a><div class="content"><a class="title" href="/2024/08/02/DDIA/partition/" title="DDIA-数据分区">DDIA-数据分区</a><a class="article-recent_post_categories" href="/2024/08/02/DDIA/partition/">分布式</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/31/DDIA/copy/" title="DDIA-数据复制"><img alt="DDIA-数据复制" src="/img/blog/blog17.jpg"></a><div class="content"><a class="title" href="/2024/07/31/DDIA/copy/" title="DDIA-数据复制">DDIA-数据复制</a><a class="article-recent_post_categories" href="/2024/07/31/DDIA/copy/">分布式</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/31/DDIA/distribut/" title="DDIA-分布式数据系统"><img alt="DDIA-分布式数据系统" src="/img/blog/blog16.jpg"></a><div class="content"><a class="title" href="/2024/07/31/DDIA/distribut/" title="DDIA-分布式数据系统">DDIA-分布式数据系统</a><a class="article-recent_post_categories" href="/2024/07/31/DDIA/distribut/">分布式</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/29/DDIA/coding/" title="DDIA-数据编码与演化"><img alt="DDIA-数据编码与演化" src="/img/blog/blog15.jpg"></a><div class="content"><a class="title" href="/2024/07/29/DDIA/coding/" title="DDIA-数据编码与演化">DDIA-数据编码与演化</a><a class="article-recent_post_categories" href="/2024/07/29/DDIA/coding/">大数据</a></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/07/27/DDIA/storage/" title="DDIA-数据存储与检索"><img alt="DDIA-数据存储与检索" src="/img/blog/blog14.jpg"></a><div class="content"><a class="title" href="/2024/07/27/DDIA/storage/" title="DDIA-数据存储与检索">DDIA-数据存储与检索</a><a class="article-recent_post_categories" href="/2024/07/27/DDIA/storage/">大数据</a></div></div></div></div></div></div></main><footer id="footer"><div id="st-footer-bar"><div class="footer-logo"><span class="solitude">Solitude</span></div><div class="footer-bar-description">来自tiny-sky 的个人博客 - 人生苦短，及时行乐的文章</div><a class="footer-bar-link" href="/">了解更多</a></div><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/tiny-sky" title="Github"><i class="solitude  st-github-line"></i></a><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/img/pwa/favicon.ico" alt="返回顶部"></div><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/xiyou-linuxer" title="GithubGroup"><i class="solitude  st-github-line"></i></a></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="归档">归档</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div><div class="footer-group"><h3 class="footer-title">服务</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://aliyun.com/" title="阿里云">阿里云</a><a class="footer-item" target="_blank" rel="noopener" href="https://summer-ospp.ac.cn/" title="OSPP">OSPP</a><a class="footer-item" target="_blank" rel="noopener" href="https://summerofcode.withgoogle.com/" title="GSOC">GSOC</a></div></div><div class="footer-group"><h3 class="footer-title">收藏</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://csdiy.wiki/" title="CSDIY">CSDIY</a><a class="footer-item" target="_blank" rel="noopener" href="https://xiaolincoding.com/" title="小林Coding">小林Coding</a><a class="footer-item" target="_blank" rel="noopener" href="https://subingwen.cn/" title="爱编程的大丙">爱编程的大丙</a></div></div><div class="footer-group"><h3 class="footer-title">网站</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener" href="https://leetcode.cn/" title="LeetCode">LeetCode</a><a class="footer-item" target="_blank" rel="noopener" href="https://chat.openai.com/" title="ChatGPT">ChatGPT</a></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2024 By&nbsp;<a class="footer-bar-link" href="/">tiny-sky</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com/valor-x/hexo-theme-solitude" title="主题">主题</a><a class="footer-bar-link cc" href="/null" aria-label="copyright"><i class="solitude st-copyright-line"></i><i class="solitude st-creative-commons-by-line"></i><i class="solitude st-creative-commons-nc-line"></i><i class="solitude st-creative-commons-nd-line"></i></a></div></div></div></footer></div><!-- inject body--><div><script src="/js/main.js?v=1.7.5"></script><script src="/js/utils.js?v=1.7.5"></script><script src="/js/third_party/universe.min.js?v=1.7.5"></script><script>dark()
+</script><script src="https://cdn.staticfile.net/pjax/0.2.8/pjax.min.js"></script><script src="https://cdn.staticfile.net/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdn.staticfile.net/pace/1.2.4/pace.min.js"></script></div><div id="js-pjax"><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: 'post',
+    toc: true,
+    comment: false,
+}
+</script></div><!-- newest comment--><!-- pjax--><script>let pjaxSelectors = [
+    'title',
+    '#body-wrap',
+    '#site-config',
+    'meta[name="description"]',
+    '#js-pjax',
+    'meta[property^="og:"]',
+]
+
+const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- theme--><script>initTheme = () => {
+    //let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let isDarkMode = true;
+    const cachedMode = saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+}
+initTheme()</script><!-- google adsense--><!-- search--><!-- music--></body></html><script>const posts=["2024/08/02/DDIA/partition/","2024/07/31/DDIA/copy/","2024/07/31/DDIA/distribut/","2024/07/29/DDIA/coding/","2024/07/27/DDIA/storage/","2024/07/26/DDIA/Model/","2024/07/26/DDIA/base/","2024/06/20/database/Compaction/","2024/06/19/database/Compaction-file/","2024/06/12/database/TableBuilder/","2024/05/01/skills/Hash/","2024/05/01/database/BloomFilter/","2024/04/29/database/LRUCache/","2024/04/26/c++/多重指针/","2024/04/03/gdb/gdb调试/","2024/04/02/c++/直接初始化与复制初始化/","2024/04/02/c++/智能指针/","2024/04/02/c++/左右值与move/","2024/04/02/c++/tuple/"];function toRandomPost(){ pjax.loadUrl('/'+posts[Math.floor(Math.random()*posts.length)]); }</script>
