@@ -3,7 +3,6 @@ title: Time, Clocks, and the Ordering of Events in a Distributed System
 data: 2024-08-14
 cover: /img/blog/blog22.jpg
 categories:
-- 分布式
 - 论文赏析
 tags:
 - Distributed 
