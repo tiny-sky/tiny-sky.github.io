@@ -7,6 +7,7 @@ categories:
 tags:
 - Distributed 
 - 论文
+- 共识算法
 ---
 
 《Paxos Made Simple》是 Lamport 另一篇关于 Paxos 的论文，从一个一致性算法所需要满足的条件展开，向读者讲解 paxos 算法的合理性。
