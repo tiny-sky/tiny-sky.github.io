@@ -6,6 +6,7 @@ categories:
 - 分布式
 tags:
 - Distributed 
+- ZooKeeper
 ---
 
 《从Paxos到Zookeeper》读书笔记
